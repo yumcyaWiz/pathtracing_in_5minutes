@@ -163,6 +163,22 @@ struct IntersectInfo {
 
 //////////////////////////////////////////
 
+// Sphere
+class Sphere {
+ public:
+  const Vec3 center;
+  const Real radius;
+
+  Sphere(const Vec3& _center, Real _radius)
+      : center(_center), radius(_radius) {}
+
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    const Real b = dot(ray.direction, ray.origin - center);
+    const Real c = (ray.origin - center).length2();
+    return true;
+  }
+};
+
 int main() {
   Image img(512, 512);
   img.writePPM("output.ppm");
