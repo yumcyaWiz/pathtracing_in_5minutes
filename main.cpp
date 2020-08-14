@@ -5,10 +5,14 @@
 // extern
 #include <omp.h>
 
+//////////////////////////////////////////
+
 // base computation type
 using Real = float;
 
-// 3-dimensional vector class
+//////////////////////////////////////////
+
+// 3-dimensional vector
 class Vec3 {
  public:
   Real x;
@@ -77,8 +81,26 @@ std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
   return stream;
 }
 
+//////////////////////////////////////////
+
+// Ray
+class Ray {
+ public:
+  Vec3 origin;
+  Vec3 direction;
+
+  Ray() {}
+  Ray(const Vec3& _origin, const Vec3& _direction)
+      : origin(_origin), direction(_direction) {}
+
+  Vec3 operator()(Real t) const { return origin + t * direction; }
+};
+
+//////////////////////////////////////////
+
 int main() {
   Vec3 v1(1, 0, 0), v2(0, 1, 0);
+  Ray ray;
   std::cout << v1 + v2 << std::endl;
   return 0;
 }
