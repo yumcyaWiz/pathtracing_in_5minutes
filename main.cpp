@@ -113,11 +113,13 @@ class Image {
   }
   ~Image() { delete[] pixels; }
 
+  // getter and setter
   Vec3 getPixel(uint32_t i, uint32_t j) const { return pixels[j + width * i]; }
   void setPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
     pixels[j + width * i] = rgb;
   }
 
+  // output ppm image
   void writePPM(const std::string& filename) const {
     std::ofstream file(filename);
     if (!file) {
@@ -147,6 +149,19 @@ class Image {
     file.close();
   }
 };
+
+//////////////////////////////////////////
+
+// IntersectInfo
+struct IntersectInfo {
+  Real t;          // hit distance
+  Vec3 hitPos;     // hit potision
+  Vec3 hitNormal;  // surface normal at hit position
+
+  IntersectInfo() {}
+};
+
+//////////////////////////////////////////
 
 int main() {
   Image img(512, 512);
