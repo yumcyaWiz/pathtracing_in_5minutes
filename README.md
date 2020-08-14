@@ -6,8 +6,8 @@ This is reference implementation of [Path Tracing in 5minutes]()
 
 ## Requirements
 
-* C++11 or Higher
-* CMake
+* C++17 or Higher
+* CMake 3.12 or Higher
 
 ## Build
 
