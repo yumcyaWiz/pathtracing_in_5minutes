@@ -207,6 +207,8 @@ class Sphere {
   }
 };
 
+//////////////////////////////////////////
+
 int main() {
   Image img(512, 512);
   img.writePPM("output.ppm");
