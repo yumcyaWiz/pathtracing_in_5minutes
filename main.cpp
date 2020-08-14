@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 
 // extern
@@ -94,6 +95,9 @@ class Ray {
   Vec3 origin;
   Vec3 direction;
 
+  static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
+  static constexpr Real tmax = std::numeric_limits<Real>::max();
+
   Ray() {}
   Ray(const Vec3& _origin, const Vec3& _direction)
       : origin(_origin), direction(_direction) {}
@@ -168,15 +172,35 @@ struct IntersectInfo {
 // Sphere
 class Sphere {
  public:
-  const Vec3 center;
-  const Real radius;
+  const Vec3 center;  // center of sphere
+  const Real radius;  // radius of sphere
 
   Sphere(const Vec3& _center, Real _radius)
       : center(_center), radius(_radius) {}
 
+  // intersect ray with sphere
   bool intersect(const Ray& ray, IntersectInfo& info) const {
+    // solve quadratic equation
     const Real b = dot(ray.direction, ray.origin - center);
     const Real c = length2(ray.origin - center);
+    const Real D = b * b - c;
+    if (D < 0) return false;
+
+    // choose closer hit distance
+    const Real t0 = -b - std::sqrt(D);
+    const Real t1 = -b + std::sqrt(D);
+    Real t = t0;
+    if (t < ray.tmin || t > ray.tmax) {
+      t = t1;
+      if (t < ray.tmin || t > ray.tmax) {
+        return false;
+      }
+    }
+
+    info.t = t;
+    info.hitPos = ray(t);
+    info.hitNormal = normalize(info.hitPos - center);
+
     return true;
   }
 };
