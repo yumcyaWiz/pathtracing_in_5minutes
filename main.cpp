@@ -82,6 +82,8 @@ Real length(const Vec3& v) {
 }
 Real length2(const Vec3& v) { return v.x * v.x + v.y * v.y + v.z * v.z; }
 
+Vec3 normalize(const Vec3& v) { return v / length(v); }
+
 std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
   stream << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   return stream;
