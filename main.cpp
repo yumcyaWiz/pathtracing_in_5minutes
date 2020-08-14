@@ -1,6 +1,9 @@
 // STL
+#include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <iostream>
+#include <string>
 
 // extern
 #include <omp.h>
@@ -98,9 +101,56 @@ class Ray {
 
 //////////////////////////////////////////
 
+// Image
+class Image {
+ public:
+  uint32_t width;   // width of image in [px]
+  uint32_t height;  // height of image in [px]
+  Vec3* pixels;     // an array contains RGB at each pixel, row-major.
+
+  Image(uint32_t _width, uint32_t _height) : width(_width), height(_height) {
+    pixels = new Vec3[width * height];
+  }
+  ~Image() { delete[] pixels; }
+
+  Vec3 getPixel(uint32_t i, uint32_t j) const { return pixels[j + width * i]; }
+  void setPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
+    pixels[j + width * i] = rgb;
+  }
+
+  void writePPM(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file) {
+      printf("failed to open %s", filename.c_str());
+      return;
+    }
+
+    // ppm header
+    file << "P3" << std::endl;
+    file << width << " " << height << std::endl;
+    file << "255" << std::endl;
+
+    for (int i = 0; i < width; ++i) {
+      for (int j = 0; j < height; ++j) {
+        const Vec3& rgb = getPixel(i, j);
+        const uint32_t R =
+            std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
+        const uint32_t G =
+            std::clamp(static_cast<uint32_t>(255 * rgb.y), 0u, 255u);
+        const uint32_t B =
+            std::clamp(static_cast<uint32_t>(255 * rgb.z), 0u, 255u);
+
+        file << R << " " << G << " " << B << std::endl;
+      }
+    }
+
+    file.close();
+  }
+};
+
 int main() {
-  Vec3 v1(1, 0, 0), v2(0, 1, 0);
-  Ray ray;
-  std::cout << v1 + v2 << std::endl;
+  Image img(512, 512);
+  img.writePPM("output.ppm");
+
   return 0;
 }
