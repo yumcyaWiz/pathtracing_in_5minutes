@@ -4,7 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
+#include <vector>
 
 // extern
 #include <omp.h>
@@ -166,7 +168,7 @@ struct IntersectInfo {
   Vec3 hitPos;     // hit potision
   Vec3 hitNormal;  // surface normal at hit position
 
-  IntersectInfo() {}
+  IntersectInfo() : t(std::numeric_limits<Real>::max()) {}
 };
 
 //////////////////////////////////////////
@@ -208,6 +210,24 @@ class Sphere {
 };
 
 //////////////////////////////////////////
+
+// Intersector
+class Intersector {
+ public:
+  std::vector<std::shared_ptr<Sphere>> prims;  // primitives
+
+  Intersector() {}
+  Intersector(const std::vector<std::shared_ptr<Sphere>>& _prims) {}
+
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    bool hit = false;
+    for (const auto& prim : prims) {
+      IntersectInfo temp_info;
+      if (prim->intersect(ray, temp_info)) {
+      }
+    }
+  }
+};
 
 int main() {
   Image img(512, 512);
