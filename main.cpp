@@ -116,57 +116,6 @@ class Ray {
 
 //////////////////////////////////////////
 
-// Image
-class Image {
- public:
-  uint32_t width;   // width of image in [px]
-  uint32_t height;  // height of image in [px]
-  Vec3* pixels;     // an array contains RGB at each pixel, row-major.
-
-  Image(uint32_t _width, uint32_t _height) : width(_width), height(_height) {
-    pixels = new Vec3[width * height];
-  }
-  ~Image() { delete[] pixels; }
-
-  // getter and setter
-  Vec3 getPixel(uint32_t i, uint32_t j) const { return pixels[j + width * i]; }
-  void setPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
-    pixels[j + width * i] = rgb;
-  }
-
-  // output ppm image
-  void writePPM(const std::string& filename) const {
-    std::ofstream file(filename);
-    if (!file) {
-      printf("failed to open %s", filename.c_str());
-      return;
-    }
-
-    // ppm header
-    file << "P3" << std::endl;
-    file << width << " " << height << std::endl;
-    file << "255" << std::endl;
-
-    for (int i = 0; i < width; ++i) {
-      for (int j = 0; j < height; ++j) {
-        const Vec3& rgb = getPixel(i, j);
-        const uint32_t R =
-            std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
-        const uint32_t G =
-            std::clamp(static_cast<uint32_t>(255 * rgb.y), 0u, 255u);
-        const uint32_t B =
-            std::clamp(static_cast<uint32_t>(255 * rgb.z), 0u, 255u);
-
-        file << R << " " << G << " " << B << std::endl;
-      }
-    }
-
-    file.close();
-  }
-};
-
-//////////////////////////////////////////
-
 // IntersectInfo
 struct IntersectInfo {
   Real t;          // hit distance
@@ -292,7 +241,67 @@ class Sampler {
 
 //////////////////////////////////////////
 
+// Film
+class Film {
+ public:
+  uint32_t width;            // width of image in [px]
+  uint32_t height;           // height of image in [px]
+  const Real width_length;   // physical length in x-direction in [m]
+  const Real height_length;  // physical length in y-direction in [m]
+
+  Vec3* pixels;  // an array contains RGB at each pixel, row-major.
+
+  Film(uint32_t _width, uint32_t _height, Real _width_length = 0.036,
+       Real _height_length = 0.024)
+      : width(_width),
+        height(_height),
+        width_length(_width_length),
+        height_length(_height_length) {
+    pixels = new Vec3[width * height];
+  }
+  ~Film() { delete[] pixels; }
+
+  // getter and setter
+  Vec3 getPixel(uint32_t i, uint32_t j) const { return pixels[j + width * i]; }
+  void setPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
+    pixels[j + width * i] = rgb;
+  }
+
+  // output ppm image
+  void writePPM(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file) {
+      printf("failed to open %s", filename.c_str());
+      return;
+    }
+
+    // ppm header
+    file << "P3" << std::endl;
+    file << width << " " << height << std::endl;
+    file << "255" << std::endl;
+
+    for (int i = 0; i < width; ++i) {
+      for (int j = 0; j < height; ++j) {
+        const Vec3& rgb = getPixel(i, j);
+        const uint32_t R =
+            std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
+        const uint32_t G =
+            std::clamp(static_cast<uint32_t>(255 * rgb.y), 0u, 255u);
+        const uint32_t B =
+            std::clamp(static_cast<uint32_t>(255 * rgb.z), 0u, 255u);
+
+        file << R << " " << G << " " << B << std::endl;
+      }
+    }
+
+    file.close();
+  }
+};
+
+//////////////////////////////////////////
+
 // Camera
+// pinhole camera model
 class Camera {
  public:
   Vec3 origin;   // origin of camera
@@ -300,8 +309,14 @@ class Camera {
   Vec3 right;    // right direction of camera
   Vec3 up;       // up direction of camera
 
-  Camera(const Vec3& _origin, const Vec3& _forward)
-      : origin(_origin), forward(normalize(_forward)) {
+  std::shared_ptr<Film> film;  // image sensor of camera
+
+  Real focal_length;  // focal length of pinhole camera
+
+  Camera(const Vec3& _origin, const Vec3& _forward,
+         const std::shared_ptr<Film>& _film, Real fov)
+      : origin(_origin), forward(normalize(_forward)), film(_film) {
+    // create orthonormal basis from forward direction vector
     right = normalize(cross(forward, Vec3(0, 1, 0)));
     up = normalize(cross(right, forward));
 
@@ -309,10 +324,25 @@ class Camera {
     std::cout << "[Camera] forward: " << forward << std::endl;
     std::cout << "[Camera] right: " << right << std::endl;
     std::cout << "[Camera] up: " << up << std::endl;
+
+    const Real diagonal_length =
+        std::sqrt(film->width_length * film->width_length +
+                  film->height_length * film->height_length);
+    focal_length = diagonal_length / (2 * std::tan(fov));
   }
 
   // sample ray from camera
-  bool sampleRay(uint32_t i, uint32_t j, Sampler& sampler) { return true; }
+  bool sampleRay(uint32_t i, uint32_t j, Sampler& sampler) {
+    // super sampling in pixel
+    const Real u = film->width_length *
+                   (2 * (j + sampler.uniformReal()) - film->width) /
+                   film->height;
+    const Real v = film->height_length *
+                   (2 * (i + sampler.uniformReal()) - film->height) /
+                   film->height;
+
+    // sample ray
+  }
 };
 
 //////////////////////////////////////////
