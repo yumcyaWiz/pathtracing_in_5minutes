@@ -237,9 +237,35 @@ class Intersector {
   }
 };
 
+//////////////////////////////////////////
+
 int main() {
-  Image img(512, 512);
-  img.writePPM("output.ppm");
+  // parameters
+  const uint32_t width = 512;
+  const uint32_t height = 512;
+  const uint32_t samples = 100;
+
+  // setup image
+  Image image(width, height);
+
+  // setup scene
+  std::vector<std::shared_ptr<Sphere>> prims;
+  prims.push_back(std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000));
+  prims.push_back(std::make_shared<Sphere>(Vec3(0, 1, 0), 1));
+
+  // setup intersector
+  Intersector intersector(prims);
+
+  // path tracing
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      for (int k = 0; k < samples; ++k) {
+      }
+    }
+  }
+
+  // write ppm
+  image.writePPM("output.ppm");
 
   return 0;
 }
