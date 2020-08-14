@@ -264,14 +264,14 @@ uint32_t pcg32_random_r(pcg32_random_t* rng) {
 }
 
 // random number generator
-class RNG {
+class Sampler {
  public:
   pcg32_random_t state;
 
   static constexpr uint64_t PCG32_DEFAULT_STATE = 0x853c49e6748fea9bULL;
   static constexpr uint64_t PCG32_DEFAULT_INC = 0xda3e39cb94b95bdbULL;
 
-  RNG() {
+  Sampler() {
     state.state = PCG32_DEFAULT_STATE;
     state.inc = PCG32_DEFAULT_INC;
   }
@@ -289,9 +289,6 @@ class RNG {
                     ONE_MINUS_EPS);
   }
 };
-
-// Sampler
-class Sampler {};
 
 //////////////////////////////////////////
 
@@ -315,7 +312,7 @@ class Camera {
   }
 
   // sample ray from camera
-  bool sampleRay(uint32_t i, uint32_t j) { return true; }
+  bool sampleRay(uint32_t i, uint32_t j, Sampler& sampler) { return true; }
 };
 
 //////////////////////////////////////////
@@ -349,11 +346,6 @@ int main() {
   // write ppm
   image.writePPM("output.ppm");
   */
-  RNG rng;
-  rng.setSeed(100);
-  for (int i = 0; i < 100; ++i) {
-    std::cout << rng.uniformReal() << std::endl;
-  }
 
   return 0;
 }
