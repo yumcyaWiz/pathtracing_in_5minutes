@@ -219,13 +219,21 @@ class Intersector {
   Intersector() {}
   Intersector(const std::vector<std::shared_ptr<Sphere>>& _prims) {}
 
+  // find closest intersection linearly
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     bool hit = false;
+    Real t = ray.tmax;
     for (const auto& prim : prims) {
       IntersectInfo temp_info;
       if (prim->intersect(ray, temp_info)) {
+        if (temp_info.t < t) {
+          hit = true;
+          info = temp_info;
+          t = temp_info.t;
+        }
       }
     }
+    return hit;
   }
 };
 
