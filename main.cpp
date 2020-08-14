@@ -239,6 +239,29 @@ class Intersector {
 
 //////////////////////////////////////////
 
+// Camera
+class Camera {
+ public:
+  Vec3 origin;   // origin of camera
+  Vec3 forward;  // forward direction of camera
+  Vec3 right;    // right direction of camera
+  Vec3 up;       // up direction of camera
+
+  Camera(const Vec3& _origin, const Vec3& _forward)
+      : origin(_origin), forward(normalize(_forward)) {
+    right = normalize(cross(forward, Vec3(0, 1, 0)));
+    up = normalize(cross(right, forward));
+
+    std::cout << "[Camera] origin: " << origin << std::endl;
+    std::cout << "[Camera] forward: " << forward << std::endl;
+    std::cout << "[Camera] right: " << right << std::endl;
+    std::cout << "[Camera] up: " << up << std::endl;
+  }
+
+  // sample ray from camera
+  bool sampleRay(uint32_t i, uint32_t j) { return true; }
+};
+
 int main() {
   // parameters
   const uint32_t width = 512;
