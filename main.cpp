@@ -18,6 +18,11 @@ using Real = float;
 
 //////////////////////////////////////////
 
+// global constants
+constexpr Real ONE_MINUS_EPS = 1 - std::numeric_limits<Real>::epsilon();
+
+//////////////////////////////////////////
+
 // 3-dimensional vector
 class Vec3 {
  public:
@@ -236,6 +241,57 @@ class Intersector {
     return hit;
   }
 };
+//////////////////////////////////////////
+
+// PCG32 random number generator
+
+// *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
+// Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
+
+typedef struct {
+  uint64_t state;
+  uint64_t inc;
+} pcg32_random_t;
+
+uint32_t pcg32_random_r(pcg32_random_t* rng) {
+  uint64_t oldstate = rng->state;
+  // Advance internal state
+  rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
+  // Calculate output function (XSH RR), uses old state for max ILP
+  uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+  uint32_t rot = oldstate >> 59u;
+  return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+}
+
+// random number generator
+class RNG {
+ public:
+  pcg32_random_t state;
+
+  static constexpr uint64_t PCG32_DEFAULT_STATE = 0x853c49e6748fea9bULL;
+  static constexpr uint64_t PCG32_DEFAULT_INC = 0xda3e39cb94b95bdbULL;
+
+  RNG() {
+    state.state = PCG32_DEFAULT_STATE;
+    state.inc = PCG32_DEFAULT_INC;
+  }
+
+  // set seed of random number generator
+  void setSeed(uint64_t seed) {
+    state.state = seed;
+    uniformReal();
+    uniformReal();
+  }
+
+  // return random value in [0, 1]
+  Real uniformReal() {
+    return std::min(static_cast<Real>(pcg32_random_r(&state) * 0x1p-32),
+                    ONE_MINUS_EPS);
+  }
+};
+
+// Sampler
+class Sampler {};
 
 //////////////////////////////////////////
 
@@ -262,7 +318,10 @@ class Camera {
   bool sampleRay(uint32_t i, uint32_t j) { return true; }
 };
 
+//////////////////////////////////////////
+
 int main() {
+  /*
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
@@ -289,6 +348,12 @@ int main() {
 
   // write ppm
   image.writePPM("output.ppm");
+  */
+  RNG rng;
+  rng.setSeed(100);
+  for (int i = 0; i < 100; ++i) {
+    std::cout << rng.uniformReal() << std::endl;
+  }
 
   return 0;
 }
