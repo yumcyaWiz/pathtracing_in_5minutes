@@ -169,7 +169,7 @@ class Ray {
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
 
-  static constexpr Real tmin = 1e1 * std::numeric_limits<Real>::epsilon();
+  static constexpr Real tmin = 1e-3;
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
   Ray() {}
@@ -506,12 +506,13 @@ class Plane : public Shape {
   };
 
   bool intersect(const Ray& ray, IntersectInfo& res) const override {
-    Real t = -dot(ray.origin - center, normal) / dot(ray.direction, normal);
+    const Real t =
+        -dot(ray.origin - center, normal) / dot(ray.direction, normal);
     if (t < ray.tmin || t > ray.tmax) return false;
 
     const Vec3 hitPos = ray(t);
-    Real dx = dot(hitPos - leftCornerPoint, rightDir);
-    Real dy = dot(hitPos - leftCornerPoint, upDir);
+    const Real dx = dot(hitPos - leftCornerPoint, rightDir);
+    const Real dy = dot(hitPos - leftCornerPoint, upDir);
     if (dx < 0 || dx > rightLength || dy < 0 || dy > upLength) return false;
 
     res.t = t;
@@ -873,7 +874,7 @@ int main() {
   Integrator integrator;
 
   // setup scene
-  Scene scene = testScene(film);
+  Scene scene = cornellBoxScene(film);
 
   // setup renderer
   Renderer renderer(scene, integrator, sampler);
