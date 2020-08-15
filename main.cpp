@@ -169,7 +169,7 @@ class Ray {
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
 
-  static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
+  static constexpr Real tmin = 1e1 * std::numeric_limits<Real>::epsilon();
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
   Ray() {}
