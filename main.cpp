@@ -571,10 +571,15 @@ class Primitive {
   }
 
   // sample direction propotional to BRDF
-  Vec3 sampleBRDF(const IntersectInfo& info, Sampler& sampler, Vec3& direction,
-                  Real& pdf_solid) const {
+  Vec3 sampleBRDF(const Ray& ray, const IntersectInfo& info, Sampler& sampler,
+                  Vec3& direction, Real& pdf_solid) const {
+    // convert direction vector from world to local
+    const Vec3 wo =
+        worldToLocal(-ray.direction, info.dpdu, info.hitNormal, info.dpdv);
+
     Vec3 direction_local;
-    const Vec3 BRDF = material->sampleBRDF(sampler, direction_local, pdf_solid);
+    const Vec3 BRDF =
+        material->sampleBRDF(wo, sampler, direction_local, pdf_solid);
 
     // convert direction vector from local to world
     direction = normalize(
@@ -689,7 +694,7 @@ class Integrator {
         Vec3 next_direction;
         Real pdf_solid;
         const Vec3 BRDF =
-            prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
+            prim->sampleBRDF(ray, info, sampler, next_direction, pdf_solid);
 
         // cosine term
         const Real cos = std::abs(dot(next_direction, info.hitNormal));
