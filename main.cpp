@@ -92,6 +92,16 @@ Real length2(const Vec3& v) { return v.x * v.x + v.y * v.y + v.z * v.z; }
 
 Vec3 normalize(const Vec3& v) { return v / length(v); }
 
+Vec3 worldToLocal(const Vec3& v, const Vec3& lx, const Vec3& ly,
+                  const Vec3& lz) {
+  return Vec3(dot(v, lx), dot(v, ly), dot(v, lz));
+}
+Vec3 localToWorld(const Vec3& v, const Vec3& lx, const Vec3& ly,
+                  const Vec3& lz) {
+  return Vec3(dot(v, Vec3(lx.x, ly.x, lz.x)), dot(v, Vec3(lx.y, ly.y, lz.y)),
+              dot(v, Vec3(lx.z, ly.z, lz.z)));
+}
+
 std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
   stream << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   return stream;
@@ -165,7 +175,7 @@ class Sampler {
 };
 
 // sampling utils
-inline Vec3 sampleUniformHemisphere(Real u, Real v, Real& pdf) {
+Vec3 sampleUniformHemisphere(Real u, Real v, Real& pdf) {
   const Real theta = 0.5 * std::acos(1.0 - 2.0 * u);
   const Real phi = 2 * PI * v;
   const Real y = std::cos(theta);
