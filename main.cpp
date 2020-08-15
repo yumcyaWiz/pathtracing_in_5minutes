@@ -582,8 +582,6 @@ class Integrator {
     Vec3 throughput(1);
 
     for (uint64_t depth = 0; depth < maxDepth; depth++) {
-      if (depth > maxDepth) return radiance;
-
       // russian roulette
       if (sampler.uniformReal() >= russian_roulette_prob) return radiance;
       throughput /= russian_roulette_prob;
@@ -601,6 +599,7 @@ class Integrator {
         Real pdf_solid;
         const Vec3 BRDF =
             prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
+        std::cout << BRDF << std::endl;
 
         // update throughput
         throughput *= BRDF / pdf_solid;
@@ -630,7 +629,7 @@ class Renderer {
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
   void render(uint64_t n_samples) {
-#pragma omp parallel for schedule(dynamic, 1)
+    // #pragma omp parallel for schedule(dynamic, 1)
     for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
       for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
         for (uint64_t k = 0; k < n_samples; ++k) {
@@ -664,7 +663,7 @@ int main() {
 
   // setup camera
   const auto camera =
-      std::make_shared<Camera>(Vec3(0, 0, 1), Vec3(0, 0, -1), film, PI / 2.0);
+      std::make_shared<Camera>(Vec3(0, 1, 1), Vec3(0, 0, -1), film, PI / 2.0);
 
   // setup primitives
   std::vector<std::shared_ptr<Primitive>> prims;
