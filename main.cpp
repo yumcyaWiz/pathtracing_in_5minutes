@@ -498,7 +498,12 @@ class Intersector {
       if (prim->intersect(ray, temp_info)) {
         if (temp_info.t < t) {
           hit = true;
+
+          // set intersect info
           info = temp_info;
+          info.hitPrimitive = prim;
+
+          // update minimal hit distance
           t = temp_info.t;
         }
       }
