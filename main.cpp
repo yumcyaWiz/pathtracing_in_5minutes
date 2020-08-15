@@ -611,6 +611,7 @@ class Integrator {
 
       } else {
         radiance += throughput * scene.sky->Le(ray);
+        break;
       }
     }
 
@@ -642,7 +643,7 @@ class Renderer {
           const Vec3 radiance = integrator.radiance(ray, scene, sampler);
 
           // add radiance on pixel
-          scene.camera->film->addPixel(i, j, (ray.direction + 1) / 2);
+          scene.camera->film->addPixel(i, j, radiance);
         }
       }
     }
@@ -678,7 +679,7 @@ int main() {
       std::make_shared<Light>(Vec3(0))));
 
   // setup sky
-  const auto sky = std::make_shared<Sky>(Vec3(0.8));
+  const auto sky = std::make_shared<Sky>(Vec3(1));
 
   // setup scene
   Scene scene(camera, prims, sky);
