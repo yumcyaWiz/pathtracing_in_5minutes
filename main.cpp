@@ -415,10 +415,10 @@ class Primitive {
 // Intersector
 class Intersector {
  public:
-  std::vector<std::shared_ptr<Sphere>> prims;  // primitives
+  std::vector<std::shared_ptr<Primitive>> prims;  // primitives
 
   Intersector() {}
-  Intersector(const std::vector<std::shared_ptr<Sphere>>& _prims) {}
+  Intersector(const std::vector<std::shared_ptr<Primitive>>& _prims) {}
 
   // find closest intersection linearly
   bool intersect(const Ray& ray, IntersectInfo& info) const {
