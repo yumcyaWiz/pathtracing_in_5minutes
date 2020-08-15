@@ -374,12 +374,15 @@ class Camera {
 
 //////////////////////////////////////////
 
+// Material utils
+Vec3 reflect(const Vec3& v, const Vec3& n) { return -v + 2 * dot(v, n) * n; }
+
 // Material
 // computation on local coordinate(surface normal is y-axis)
 class Material {
  public:
   // BRDF sampling
-  virtual Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+  virtual Vec3 sampleBRDF(const Vec3& wo, Sampler& sampler, Vec3& direction,
                           Real& pdf_solid) const = 0;
 };
 
@@ -389,7 +392,7 @@ class Diffuse : public Material {
 
   Diffuse(const Vec3& _kd) : kd(_kd) {}
 
-  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+  Vec3 sampleBRDF(const Vec3& wo, Sampler& sampler, Vec3& direction,
                   Real& pdf_solid) const override {
     // sample direction
     direction = sampleCosineHemisphere(sampler.uniformReal(),
@@ -406,9 +409,12 @@ class Mirror : public Material {
 
   Mirror(const Vec3& ks) {}
 
-  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+  Vec3 sampleBRDF(const Vec3& wo, Sampler& sampler, Vec3& direction,
                   Real& pdf_solid) const override {
-    return Vec3();
+    direction = reflect(wo, Vec3(0, 1, 0));
+    pdf_solid = 1;
+
+    return ks;
   }
 };
 
