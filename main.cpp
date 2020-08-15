@@ -919,7 +919,7 @@ int main() {
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
-  const uint64_t samples = 4000;
+  const uint64_t samples = 100;
 
   // setup image
   const auto film = std::make_shared<Film>(width, height);
@@ -931,7 +931,7 @@ int main() {
   Integrator integrator;
 
   // setup scene
-  Scene scene = cornellBoxScene(film);
+  Scene scene = testScene(film);
 
   // setup renderer
   Renderer renderer(scene, integrator, sampler);
