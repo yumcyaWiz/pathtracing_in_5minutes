@@ -326,6 +326,8 @@ struct IntersectInfo {
   Real t;          // hit distance
   Vec3 hitPos;     // hit potision
   Vec3 hitNormal;  // surface normal at hit position
+  Vec3 dpdu;       // derivative of hit position with u(tangent vector)
+  Vec3 dpdv;       // derivative of hit position with v(cotangent vector)
 
   IntersectInfo() : t(std::numeric_limits<Real>::max()) {}
 };
@@ -365,6 +367,33 @@ class Sphere {
     info.hitNormal = normalize(info.hitPos - center);
 
     return true;
+  }
+};
+
+//////////////////////////////////////////
+
+// Primitive
+class Primitive {
+ public:
+  std::shared_ptr<Sphere> sphere;
+  std::shared_ptr<Material> material;
+
+  Primitive(const std::shared_ptr<Sphere>& _sphere,
+            const std::shared_ptr<Material>& _material)
+      : sphere(_sphere), material(_material) {}
+
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    return sphere->intersect(ray, info);
+  }
+
+  Vec3 sampleBRDF(const IntersectInfo& info, Sampler& sampler, Vec3& direction,
+                  Real& pdf_solid) const {
+    Vec3 direction_local;
+    const Vec3 BRDF = material->sampleBRDF(sampler, direction_local, pdf_solid);
+
+    // generate orthonormal basis
+
+    // convert direction vector from local to world
   }
 };
 
