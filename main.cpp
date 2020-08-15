@@ -854,7 +854,7 @@ Scene cornellBoxScene(const std::shared_ptr<Film>& film) {
   const auto green = Vec3(0.05, 0.8, 0.05);
 
   const auto floor_prim = std::make_shared<Primitive>(
-      floor, std::make_shared<Mirror>(white1), nullptr);
+      floor, std::make_shared<Diffuse>(white1), nullptr);
   const auto right_wall_prim = std::make_shared<Primitive>(
       right_wall, std::make_shared<Diffuse>(green), nullptr);
   const auto left_wall_prim = std::make_shared<Primitive>(
@@ -905,7 +905,7 @@ Scene cornellBoxScene(const std::shared_ptr<Film>& film) {
   prims.push_back(light_prim);
 
   // setup sky
-  const auto sky = std::make_shared<Sky>(Vec3(1));
+  const auto sky = std::make_shared<Sky>(Vec3(0));
 
   // setup scene
   Scene scene(camera, prims, sky);
@@ -919,7 +919,7 @@ int main() {
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
-  const uint64_t samples = 100;
+  const uint64_t samples = 4000;
 
   // setup image
   const auto film = std::make_shared<Film>(width, height);
