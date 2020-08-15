@@ -402,9 +402,11 @@ class Primitive {
     Vec3 direction_local;
     const Vec3 BRDF = material->sampleBRDF(sampler, direction_local, pdf_solid);
 
-    // generate orthonormal basis
-
     // convert direction vector from local to world
+    direction =
+        localToWorld(direction_local, info.dpdu, info.hitNormal, info.dpdv);
+
+    return BRDF;
   }
 };
 
@@ -435,6 +437,7 @@ class Intersector {
     return hit;
   }
 };
+
 //////////////////////////////////////////
 
 int main() {
