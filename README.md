@@ -4,6 +4,8 @@ Single file path tracer written in C++.
 
 This is reference implementation of [Path Tracing in 5minutes](https://speakerdeck.com/yumcyawiz/path-tracing-in-5-minutes)
 
+![](img/cornellbox.png)
+
 ## Requirements
 
 * C++17 or Higher
