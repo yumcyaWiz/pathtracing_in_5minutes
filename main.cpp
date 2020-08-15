@@ -546,16 +546,18 @@ class Sky {
 // Scene
 class Scene {
  public:
-  std::shared_ptr<Camera> camera;
-  std::shared_ptr<Sampler> sampler;
-  std::vector<std::shared_ptr<Primitive>> prims;
+  const std::shared_ptr<Camera> camera;
+  const std::shared_ptr<Sampler> sampler;
+  const std::vector<std::shared_ptr<Primitive>> prims;
+  const std::shared_ptr<Sky> sky;
 
   Intersector intersector;
 
   Scene(const std::shared_ptr<Camera>& _camera,
         const std::shared_ptr<Sampler>& _sampler,
-        const std::vector<std ::shared_ptr<Primitive>>& _prims)
-      : camera(_camera), sampler(_sampler), prims(_prims) {
+        const std::vector<std ::shared_ptr<Primitive>>& _prims,
+        const std ::shared_ptr<Sky>& _sky)
+      : camera(_camera), sampler(_sampler), prims(_prims), sky(_sky) {
     // setup intersector
     intersector = Intersector(prims);
   }
