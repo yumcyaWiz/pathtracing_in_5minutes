@@ -630,6 +630,7 @@ class Renderer {
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
   void render(uint64_t n_samples) {
+#pragma omp parallel for schedule(dynamic, 1)
     for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
       for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
         for (uint64_t k = 0; k < n_samples; ++k) {
@@ -656,7 +657,7 @@ int main() {
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
-  const uint64_t samples = 100;
+  const uint64_t samples = 1;
 
   // setup image
   const auto film = std::make_shared<Film>(width, height);
@@ -672,10 +673,11 @@ int main() {
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
+      std::make_shared<Light>(Vec3(0))));
 
   // setup sky
-  const auto sky = std::make_shared<Sky>(Vec3(1));
+  const auto sky = std::make_shared<Sky>(Vec3(0.8));
 
   // setup scene
   Scene scene(camera, prims, sky);
