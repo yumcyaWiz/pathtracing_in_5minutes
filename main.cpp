@@ -115,15 +115,17 @@ std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
 // Ray
 class Ray {
  public:
-  Vec3 origin;
-  Vec3 direction;
+  Vec3 origin;     // origin of ray
+  Vec3 direction;  // direction of ray
+
+  Vec3 throughput;  // throughput in RGB
 
   static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
-  Ray() {}
+  Ray() : throughput(Vec3(1)) {}
   Ray(const Vec3& _origin, const Vec3& _direction)
-      : origin(_origin), direction(_direction) {}
+      : origin(_origin), direction(_direction), throughput(Vec3(1)) {}
 
   Vec3 operator()(Real t) const { return origin + t * direction; }
 };
@@ -281,7 +283,7 @@ class Camera {
   }
 
   // sample ray from camera
-  bool sampleRay(uint32_t i, uint32_t j, Sampler& sampler, Ray& ray) {
+  Ray sampleRay(uint32_t i, uint32_t j, Sampler& sampler) {
     // sample position in pixel with super sampling
     const Real u = film->width_length *
                    (2 * (j + sampler.uniformReal()) - film->width) /
@@ -293,8 +295,7 @@ class Camera {
 
     // sample ray
     const Vec3 p_pinhole = origin + focal_length * forward;
-    ray = Ray(origin, normalize(p_pinhole - p_film));
-    return true;
+    return Ray(origin, normalize(p_pinhole - p_film));
   }
 };
 
@@ -441,34 +442,53 @@ class Intersector {
 //////////////////////////////////////////
 
 int main() {
-  /*
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
   const uint32_t samples = 100;
+  const uint32_t maxDepth = 100;
+  const Real russian_roulette_prob = 0.99;
 
   // setup image
-  Image image(width, height);
+  const auto film = std::make_shared<Film>(width, height);
 
-  // setup scene
-  std::vector<std::shared_ptr<Sphere>> prims;
-  prims.push_back(std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000));
-  prims.push_back(std::make_shared<Sphere>(Vec3(0, 1, 0), 1));
+  // setup camera
+  Camera camera(Vec3(0, 0, 1), Vec3(0, 0, -1), film, PI / 2.0);
+
+  // setup primitives
+  std::vector<std::shared_ptr<Primitive>> prims;
+  prims.push_back(std::make_shared<Primitive>(
+      std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000),
+      std::make_shared<Material>(Vec3(0.8))));
+  prims.push_back(
+      std::make_shared<Primitive>(std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
+                                  std::make_shared<Material>(Vec3(0.8))));
 
   // setup intersector
   Intersector intersector(prims);
 
+  // setup sampler
+  Sampler sampler;
+
   // path tracing
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
+      // sample ray
+      Ray ray = camera.sampleRay(i, j, sampler);
+
+      uint32_t depth = 0;
       for (int k = 0; k < samples; ++k) {
+        if (depth > maxDepth) break;
+
+        // russian roulette
+        if (sampler.uniformReal() >= russian_roulette_prob) break;
+        ray.throughput /= russian_roulette_prob;
       }
     }
   }
 
   // write ppm
-  image.writePPM("output.ppm");
-  */
+  camera.film->writePPM("output.ppm");
 
   return 0;
 }
