@@ -1,5 +1,6 @@
 // STL
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -744,6 +745,7 @@ class Renderer {
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
   void render(uint64_t n_samples) {
+    const auto start_time = std::chrono::system_clock::now();
     for (uint64_t k = 0; k < n_samples; ++k) {
 #pragma omp parallel for schedule(dynamic, 1)
       for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
@@ -770,6 +772,13 @@ class Renderer {
         }
       }
     }
+
+    // show rendering time
+    const auto end_time = std::chrono::system_clock::now();
+    const auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          end_time - start_time)
+                          .count();
+    std::cout << "Rendering finished in " << msec << "ms" << std::endl;
 
     // divide by n_samples
     scene.camera->film->divide(n_samples);
@@ -931,7 +940,7 @@ int main() {
   Integrator integrator;
 
   // setup scene
-  Scene scene = testScene(film);
+  Scene scene = cornellBoxScene(film);
 
   // setup renderer
   Renderer renderer(scene, integrator, sampler);
