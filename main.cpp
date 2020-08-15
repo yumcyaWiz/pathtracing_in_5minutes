@@ -378,6 +378,7 @@ class Camera {
 // computation on local coordinate(surface normal is y-axis)
 class Material {
  public:
+  // BRDF sampling
   virtual Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
                           Real& pdf_solid) const = 0;
 };
@@ -388,7 +389,6 @@ class Diffuse : public Material {
 
   Diffuse(const Vec3& _kd) : kd(_kd) {}
 
-  // BRDF sampling
   Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
                   Real& pdf_solid) const override {
     // sample direction
@@ -397,6 +397,18 @@ class Diffuse : public Material {
 
     // compute BRDF
     return INV_PI * kd;
+  }
+};
+
+class Mirror : public Material {
+ public:
+  const Vec3 ks;
+
+  Mirror(const Vec3& ks) {}
+
+  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+                  Real& pdf_solid) const override {
+    return Vec3();
   }
 };
 
