@@ -352,6 +352,18 @@ class Material {
 
 //////////////////////////////////////////
 
+// Light
+class Light {
+ public:
+  const Vec3 le;
+
+  Light(const Vec3& _le) : le(_le) {}
+
+  Vec3 Le() const { return le; }
+};
+
+//////////////////////////////////////////
+
 // IntersectInfo
 struct IntersectInfo {
   Real t;          // hit distance
@@ -419,10 +431,12 @@ class Primitive {
  public:
   std::shared_ptr<Sphere> sphere;
   std::shared_ptr<Material> material;
+  std::shared_ptr<Light> light;
 
   Primitive(const std::shared_ptr<Sphere>& _sphere,
-            const std::shared_ptr<Material>& _material)
-      : sphere(_sphere), material(_material) {}
+            const std::shared_ptr<Material>& _material,
+            const std::shared_ptr<Light>& _light)
+      : sphere(_sphere), material(_material), light(_light) {}
 
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     return sphere->intersect(ray, info);
@@ -489,10 +503,10 @@ int main() {
   std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000),
-      std::make_shared<Material>(Vec3(0.8))));
-  prims.push_back(
-      std::make_shared<Primitive>(std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-                                  std::make_shared<Material>(Vec3(0.8))));
+      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+  prims.push_back(std::make_shared<Primitive>(
+      std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
+      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
 
   // setup intersector
   Intersector intersector(prims);
