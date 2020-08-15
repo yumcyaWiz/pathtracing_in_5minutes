@@ -414,7 +414,8 @@ class Mirror : public Material {
     direction = reflect(wo, Vec3(0, 1, 0));
     pdf_solid = 1;
 
-    return ks;
+    const Real cos = std::abs(direction.y);
+    return ks / cos;
   }
 };
 
