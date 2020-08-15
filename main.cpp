@@ -19,6 +19,7 @@ using Real = float;
 //////////////////////////////////////////
 
 // global constants
+constexpr Real PI = 3.14159265358979323846;
 constexpr Real ONE_MINUS_EPS = 1 - std::numeric_limits<Real>::epsilon();
 
 //////////////////////////////////////////
@@ -116,7 +117,6 @@ class Ray {
 
 //////////////////////////////////////////
 
-
 // PCG32 random number generator
 
 // *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
@@ -163,6 +163,16 @@ class Sampler {
                     ONE_MINUS_EPS);
   }
 };
+
+// sampling utils
+inline Vec3 sampleUniformHemisphere(Real u, Real v, Real& pdf) {
+  const Real theta = 0.5 * std::acos(1.0 - 2.0 * u);
+  const Real phi = 2 * PI * v;
+  const Real y = std::cos(theta);
+  pdf = y / PI;
+  return Vec3(std::cos(phi) * std::sin(theta), y,
+              std::sin(phi) * std::sin(theta));
+}
 
 //////////////////////////////////////////
 
@@ -273,6 +283,18 @@ class Camera {
     ray = Ray(origin, normalize(p_pinhole - p_film));
     return true;
   }
+};
+
+//////////////////////////////////////////
+
+// Material
+class Material {
+ public:
+  const Vec3 kd;
+
+  Material(const Vec3& _kd) : kd(_kd) {}
+
+  Ray sampleRay(Sampler& sampler, Real pdf_solid) const { return Ray(); }
 };
 
 //////////////////////////////////////////
