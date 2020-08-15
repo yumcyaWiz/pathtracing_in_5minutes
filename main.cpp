@@ -717,6 +717,24 @@ class Renderer {
 
 //////////////////////////////////////////
 
+// Scenes
+
+std::vector<std::shared_ptr<Primitive>> testScene() {
+  std::vector<std::shared_ptr<Primitive>> prims;
+
+  prims.push_back(std::make_shared<Primitive>(
+      std::make_shared<Plane>(Vec3(-2, 0, -2), Vec3(0, 0, 4), Vec3(4, 0, 0)),
+      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+  prims.push_back(std::make_shared<Primitive>(
+      std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
+      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
+      std::make_shared<Light>(Vec3(0))));
+
+  return prims;
+}
+
+//////////////////////////////////////////
+
 int main() {
   // parameters
   const uint32_t width = 512;
@@ -730,21 +748,11 @@ int main() {
   const auto camera =
       std::make_shared<Camera>(Vec3(0, 1, 3), Vec3(0, 0, -1), film, PI / 2.0);
 
-  // setup primitives
-  std::vector<std::shared_ptr<Primitive>> prims;
-  prims.push_back(std::make_shared<Primitive>(
-      std::make_shared<Plane>(Vec3(-2, 0, -2), Vec3(0, 0, 4), Vec3(4, 0, 0)),
-      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
-  prims.push_back(std::make_shared<Primitive>(
-      std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
-      std::make_shared<Light>(Vec3(0))));
-
   // setup sky
   const auto sky = std::make_shared<Sky>(Vec3(1));
 
   // setup scene
-  Scene scene(camera, prims, sky);
+  Scene scene(camera, testScene(), sky);
 
   // setup sampler
   Sampler sampler;
