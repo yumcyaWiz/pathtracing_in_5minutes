@@ -543,6 +543,30 @@ class Sky {
 
 //////////////////////////////////////////
 
+// Scene
+class Scene {
+ public:
+  std::shared_ptr<Camera> camera;
+  std::shared_ptr<Sampler> sampler;
+  std::vector<std::shared_ptr<Primitive>> prims;
+
+  Intersector intersector;
+
+  Scene(const std::shared_ptr<Camera>& _camera,
+        const std::shared_ptr<Sampler>& _sampler,
+        const std::vector<std ::shared_ptr<Primitive>>& _prims)
+      : camera(_camera), sampler(_sampler), prims(_prims) {
+    // setup intersector
+    intersector = Intersector(prims);
+  }
+
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    return intersector.intersect(ray, info);
+  }
+};
+
+//////////////////////////////////////////
+
 int main() {
   // parameters
   const uint32_t width = 512;
