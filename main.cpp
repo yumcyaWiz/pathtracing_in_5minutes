@@ -733,7 +733,7 @@ int main() {
   // setup primitives
   std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
-      std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000),
+      std::make_shared<Plane>(Vec3(-2, 0, -2), Vec3(0, 0, 4), Vec3(4, 0, 0)),
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
