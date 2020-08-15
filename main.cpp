@@ -37,6 +37,37 @@ class Vec3 {
   Vec3() { x = y = z = 0; }
   Vec3(Real _x) { x = y = z = _x; }
   Vec3(Real _x, Real _y, Real _z) : x(_x), y(_y), z(_z) {}
+
+  Vec3& operator+=(const Vec3& v) {
+    x += v.x;
+    y += v.y;
+    z += v.z;
+    return *this;
+  }
+  Vec3& operator+=(Real k) {
+    x += k;
+    y += k;
+    z += k;
+    return *this;
+  }
+  Vec3& operator-=(Real k) {
+    x -= k;
+    y -= k;
+    z -= k;
+    return *this;
+  }
+  Vec3& operator*=(Real k) {
+    x *= k;
+    y *= k;
+    z *= k;
+    return *this;
+  }
+  Vec3& operator/=(Real k) {
+    x /= k;
+    y /= k;
+    z /= k;
+    return *this;
+  }
 };
 
 // Vec3 operators
