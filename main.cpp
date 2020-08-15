@@ -149,14 +149,12 @@ class Ray {
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
 
-  Vec3 throughput;  // throughput in RGB
-
   static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
-  Ray() : throughput(Vec3(1)) {}
+  Ray() {}
   Ray(const Vec3& _origin, const Vec3& _direction)
-      : origin(_origin), direction(_direction), throughput(Vec3(1)) {}
+      : origin(_origin), direction(_direction) {}
 
   Vec3 operator()(Real t) const { return origin + t * direction; }
 };
@@ -508,13 +506,21 @@ int main() {
       // sample ray
       Ray ray = camera.sampleRay(i, j, sampler);
 
+      Vec3 RGB;
+      Vec3 throughput(1);
       uint32_t depth = 0;
       for (int k = 0; k < samples; ++k) {
         if (depth > maxDepth) break;
 
         // russian roulette
         if (sampler.uniformReal() >= russian_roulette_prob) break;
-        ray.throughput /= russian_roulette_prob;
+        throughput /= russian_roulette_prob;
+
+        IntersectInfo info;
+        if (intersector.intersect(ray, info)) {
+        } else {
+          RGB += throughput * Vec3(1);
+        }
       }
     }
   }
