@@ -230,9 +230,9 @@ class Sampler {
 // sampling utils
 Vec3 sampleCosineHemisphere(Real u, Real v, Real& pdf) {
   const Real theta = 0.5 * std::acos(1.0 - 2.0 * u);
-  const Real phi = 2 * PI * v;
+  const Real phi = PI2 * v;
   const Real y = std::cos(theta);
-  pdf = y / PI;
+  pdf = y * INV_PI;
   return Vec3(std::cos(phi) * std::sin(theta), y,
               std::sin(phi) * std::sin(theta));
 }
@@ -450,18 +450,20 @@ class Sphere {
 
     info.t = t;
     info.hitPos = ray(t);
-    info.hitNormal = normalize(info.hitPos - center);
-    info.dpdu = normalize(Vec3(-info.hitPos.z, 0, info.hitPos.x));
+
+    const Vec3 r = info.hitPos - center;
+    info.hitNormal = normalize(r);
+
+    info.dpdu = normalize(Vec3(-r.z, 0, r.x));
 
     // compute local coordinate(phi, theta) of hit position
-    Real phi = std::atan2(info.hitPos.z, info.hitPos.x);
+    Real phi = std::atan2(r.z, r.x);
     if (phi < 0) phi += PI2;
     const Real theta =
-        std::acos(std::clamp(info.hitPos.y, Real(-1.0), Real(1.0)));
+        std::acos(std::clamp(r.y / radius, Real(-1.0), Real(1.0)));
 
-    info.dpdv = normalize(Vec3(std::cos(phi) * info.hitPos.y,
-                               -radius * std ::sin(theta),
-                               std::sin(phi) * info.hitPos.y));
+    info.dpdv = normalize(Vec3(std::cos(phi) * r.y, -radius * std ::sin(theta),
+                               std::sin(phi) * r.y));
 
     return true;
   }
@@ -491,8 +493,8 @@ class Primitive {
     const Vec3 BRDF = material->sampleBRDF(sampler, direction_local, pdf_solid);
 
     // convert direction vector from local to world
-    direction =
-        localToWorld(direction_local, info.dpdu, info.hitNormal, info.dpdv);
+    direction = normalize(
+        localToWorld(direction_local, info.dpdu, info.hitNormal, info.dpdv));
 
     return BRDF;
   }
@@ -635,10 +637,10 @@ class Renderer {
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
   void render(uint64_t n_samples) {
+    for (uint64_t k = 0; k < n_samples; ++k) {
 #pragma omp parallel for schedule(dynamic, 1)
-    for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
-      for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
-        for (uint64_t k = 0; k < n_samples; ++k) {
+      for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
+        for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
           // sample ray
           const Ray ray = scene.camera->sampleRay(i, j, sampler);
 
@@ -678,7 +680,8 @@ int main() {
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
+      std::make_shared<Light>(Vec3(0))));
 
   // setup sky
   const auto sky = std::make_shared<Sky>(Vec3(0.8));
