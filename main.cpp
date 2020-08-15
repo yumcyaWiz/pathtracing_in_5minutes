@@ -537,10 +537,14 @@ class Primitive {
             const std::shared_ptr<Light>& _light)
       : shape(_shape), material(_material), light(_light) {}
 
+  bool hasLight() const { return light != nullptr; }
+
+  // intersect ray with primitive
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     return shape->intersect(ray, info);
   }
 
+  // sample direction propotional to BRDF
   Vec3 sampleBRDF(const IntersectInfo& info, Sampler& sampler, Vec3& direction,
                   Real& pdf_solid) const {
     Vec3 direction_local;
@@ -651,7 +655,9 @@ class Integrator {
         const auto& prim = info.hitPrimitive;
 
         // Le
-        radiance += throughput * prim->light->Le();
+        if (prim->hasLight()) {
+          radiance += throughput * prim->light->Le();
+        }
 
         // BRDF sampling
         Vec3 next_direction;
