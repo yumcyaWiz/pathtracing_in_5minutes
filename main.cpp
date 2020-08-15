@@ -569,6 +569,58 @@ class Scene {
 
 //////////////////////////////////////////
 
+// Integrator
+class Integrator {
+ public:
+  const uint64_t maxDepth = 100;
+  const Real russian_roulette_prob = 0.99;
+
+  Integrator() {}
+
+  // compute given ray's radiance
+  Vec3 radiance(const Ray& ray_in, const Scene& scene, Sampler& sampler) const {
+    Ray ray = ray_in;
+    Vec3 radiance;
+    Vec3 throughput(1);
+
+    for (uint64_t depth = 0; depth < maxDepth; depth++) {
+      if (depth > maxDepth) return radiance;
+
+      // russian roulette
+      if (sampler.uniformReal() >= russian_roulette_prob) return radiance;
+      throughput /= russian_roulette_prob;
+
+      // compute intersection with scene
+      IntersectInfo info;
+      if (scene.intersect(ray, info)) {
+        const auto prim = info.hitPrimitive;
+
+        // Le
+        radiance += throughput * prim->light->Le();
+
+        // BRDF sampling
+        Vec3 next_direction;
+        Real pdf_solid;
+        const Vec3 BRDF =
+            prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
+
+        // update throughput
+        throughput *= BRDF / pdf_solid;
+
+        // update ray
+        ray.direction = next_direction;
+
+      } else {
+        radiance += throughput * scene.sky->Le(ray);
+      }
+    }
+
+    return radiance;
+  }
+};
+
+//////////////////////////////////////////
+
 int main() {
   // parameters
   const uint32_t width = 512;
