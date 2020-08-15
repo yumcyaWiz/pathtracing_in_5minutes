@@ -424,8 +424,14 @@ struct IntersectInfo {
 
 //////////////////////////////////////////
 
+// Shape
+class Shape {
+ public:
+  virtual bool intersect(const Ray& ray, IntersectInfo& info) const = 0;
+};
+
 // Sphere
-class Sphere {
+class Sphere : public Shape {
  public:
   const Vec3 center;  // center of sphere
   const Real radius;  // radius of sphere
@@ -434,7 +440,7 @@ class Sphere {
       : center(_center), radius(_radius) {}
 
   // intersect ray with sphere
-  bool intersect(const Ray& ray, IntersectInfo& info) const {
+  bool intersect(const Ray& ray, IntersectInfo& info) const override {
     // solve quadratic equation
     const Real b = dot(ray.direction, ray.origin - center);
     const Real c = length2(ray.origin - center) - radius * radius;
@@ -478,17 +484,17 @@ class Sphere {
 // Primitive
 class Primitive {
  public:
-  std::shared_ptr<Sphere> sphere;
+  std::shared_ptr<Shape> shape;
   std::shared_ptr<Material> material;
   std::shared_ptr<Light> light;
 
-  Primitive(const std::shared_ptr<Sphere>& _sphere,
+  Primitive(const std::shared_ptr<Shape>& _shape,
             const std::shared_ptr<Material>& _material,
             const std::shared_ptr<Light>& _light)
-      : sphere(_sphere), material(_material), light(_light) {}
+      : shape(_shape), material(_material), light(_light) {}
 
   bool intersect(const Ray& ray, IntersectInfo& info) const {
-    return sphere->intersect(ray, info);
+    return shape->intersect(ray, info);
   }
 
   Vec3 sampleBRDF(const IntersectInfo& info, Sampler& sampler, Vec3& direction,
