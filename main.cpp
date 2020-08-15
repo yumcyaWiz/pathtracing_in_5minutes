@@ -559,7 +559,7 @@ class Primitive {
   std::shared_ptr<Light> light;
 
   Primitive(const std::shared_ptr<Shape>& _shape,
-            const std::shared_ptr<Diffuse>& _material,
+            const std::shared_ptr<Material>& _material,
             const std::shared_ptr<Light>& _light)
       : shape(_shape), material(_material), light(_light) {}
 
