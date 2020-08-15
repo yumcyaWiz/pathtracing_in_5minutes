@@ -116,81 +116,6 @@ class Ray {
 
 //////////////////////////////////////////
 
-// IntersectInfo
-struct IntersectInfo {
-  Real t;          // hit distance
-  Vec3 hitPos;     // hit potision
-  Vec3 hitNormal;  // surface normal at hit position
-
-  IntersectInfo() : t(std::numeric_limits<Real>::max()) {}
-};
-
-//////////////////////////////////////////
-
-// Sphere
-class Sphere {
- public:
-  const Vec3 center;  // center of sphere
-  const Real radius;  // radius of sphere
-
-  Sphere(const Vec3& _center, Real _radius)
-      : center(_center), radius(_radius) {}
-
-  // intersect ray with sphere
-  bool intersect(const Ray& ray, IntersectInfo& info) const {
-    // solve quadratic equation
-    const Real b = dot(ray.direction, ray.origin - center);
-    const Real c = length2(ray.origin - center);
-    const Real D = b * b - c;
-    if (D < 0) return false;
-
-    // choose closer hit distance
-    const Real t0 = -b - std::sqrt(D);
-    const Real t1 = -b + std::sqrt(D);
-    Real t = t0;
-    if (t < ray.tmin || t > ray.tmax) {
-      t = t1;
-      if (t < ray.tmin || t > ray.tmax) {
-        return false;
-      }
-    }
-
-    info.t = t;
-    info.hitPos = ray(t);
-    info.hitNormal = normalize(info.hitPos - center);
-
-    return true;
-  }
-};
-
-//////////////////////////////////////////
-
-// Intersector
-class Intersector {
- public:
-  std::vector<std::shared_ptr<Sphere>> prims;  // primitives
-
-  Intersector() {}
-  Intersector(const std::vector<std::shared_ptr<Sphere>>& _prims) {}
-
-  // find closest intersection linearly
-  bool intersect(const Ray& ray, IntersectInfo& info) const {
-    bool hit = false;
-    Real t = ray.tmax;
-    for (const auto& prim : prims) {
-      IntersectInfo temp_info;
-      if (prim->intersect(ray, temp_info)) {
-        if (temp_info.t < t) {
-          hit = true;
-          info = temp_info;
-          t = temp_info.t;
-        }
-      }
-    }
-    return hit;
-  }
-};
-//////////////////////////////////////////
 
 // PCG32 random number generator
 
@@ -350,6 +275,82 @@ class Camera {
   }
 };
 
+//////////////////////////////////////////
+
+// IntersectInfo
+struct IntersectInfo {
+  Real t;          // hit distance
+  Vec3 hitPos;     // hit potision
+  Vec3 hitNormal;  // surface normal at hit position
+
+  IntersectInfo() : t(std::numeric_limits<Real>::max()) {}
+};
+
+//////////////////////////////////////////
+
+// Sphere
+class Sphere {
+ public:
+  const Vec3 center;  // center of sphere
+  const Real radius;  // radius of sphere
+
+  Sphere(const Vec3& _center, Real _radius)
+      : center(_center), radius(_radius) {}
+
+  // intersect ray with sphere
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    // solve quadratic equation
+    const Real b = dot(ray.direction, ray.origin - center);
+    const Real c = length2(ray.origin - center);
+    const Real D = b * b - c;
+    if (D < 0) return false;
+
+    // choose closer hit distance
+    const Real t0 = -b - std::sqrt(D);
+    const Real t1 = -b + std::sqrt(D);
+    Real t = t0;
+    if (t < ray.tmin || t > ray.tmax) {
+      t = t1;
+      if (t < ray.tmin || t > ray.tmax) {
+        return false;
+      }
+    }
+
+    info.t = t;
+    info.hitPos = ray(t);
+    info.hitNormal = normalize(info.hitPos - center);
+
+    return true;
+  }
+};
+
+//////////////////////////////////////////
+
+// Intersector
+class Intersector {
+ public:
+  std::vector<std::shared_ptr<Sphere>> prims;  // primitives
+
+  Intersector() {}
+  Intersector(const std::vector<std::shared_ptr<Sphere>>& _prims) {}
+
+  // find closest intersection linearly
+  bool intersect(const Ray& ray, IntersectInfo& info) const {
+    bool hit = false;
+    Real t = ray.tmax;
+    for (const auto& prim : prims) {
+      IntersectInfo temp_info;
+      if (prim->intersect(ray, temp_info)) {
+        if (temp_info.t < t) {
+          hit = true;
+          info = temp_info;
+          t = temp_info.t;
+        }
+      }
+    }
+    return hit;
+  }
+};
 //////////////////////////////////////////
 
 int main() {
