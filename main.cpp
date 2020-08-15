@@ -718,6 +718,21 @@ class Integrator {
 
 //////////////////////////////////////////
 
+// print utility
+std::string percentage(Real x, Real max) {
+  return std::to_string(x / max * 100.0) + "%";
+}
+std::string progressbar(Real x, Real max) {
+  const int max_count = 40;
+  int cur_count = (int)(x / max * max_count);
+  std::string str;
+  str += "[";
+  for (int i = 0; i < cur_count; i++) str += "#";
+  for (int i = 0; i < (max_count - cur_count - 1); i++) str += " ";
+  str += "]";
+  return str;
+}
+
 class Renderer {
  public:
   const Scene scene;
@@ -741,6 +756,17 @@ class Renderer {
 
           // add radiance on pixel
           scene.camera->film->addPixel(i, j, radiance);
+
+          if (omp_get_thread_num() == 0) {
+            const Real index =
+                j + i * scene.camera->film->width +
+                k * scene.camera->film->width * scene.camera->film->height;
+            const Real max = scene.camera->film->width *
+                             scene.camera->film->height * n_samples;
+            std::cout << progressbar(index, max) << " "
+                      << percentage(index, max) << "%"
+                      << "\r" << std::flush;
+          }
         }
       }
     }
