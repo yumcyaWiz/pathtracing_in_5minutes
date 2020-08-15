@@ -378,12 +378,19 @@ class Camera {
 // computation on local coordinate(surface normal is y-axis)
 class Material {
  public:
+  virtual Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+                          Real& pdf_solid) const = 0;
+};
+
+class Diffuse : public Material {
+ public:
   const Vec3 kd;
 
-  Material(const Vec3& _kd) : kd(_kd) {}
+  Diffuse(const Vec3& _kd) : kd(_kd) {}
 
   // BRDF sampling
-  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction, Real& pdf_solid) const {
+  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction,
+                  Real& pdf_solid) const override {
     // sample direction
     direction = sampleCosineHemisphere(sampler.uniformReal(),
                                        sampler.uniformReal(), pdf_solid);
@@ -534,7 +541,7 @@ class Primitive {
   std::shared_ptr<Light> light;
 
   Primitive(const std::shared_ptr<Shape>& _shape,
-            const std::shared_ptr<Material>& _material,
+            const std::shared_ptr<Diffuse>& _material,
             const std::shared_ptr<Light>& _light)
       : shape(_shape), material(_material), light(_light) {}
 
@@ -735,10 +742,10 @@ Scene testScene(const std::shared_ptr<Film>& film) {
   std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Plane>(Vec3(-2, 0, -2), Vec3(0, 0, 4), Vec3(4, 0, 0)),
-      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Diffuse>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
+      std::make_shared<Diffuse>(Vec3(0.2, 0.2, 0.8)),
       std::make_shared<Light>(Vec3(0))));
 
   // setup sky
@@ -797,37 +804,37 @@ Scene cornellBoxScene(const std::shared_ptr<Film>& film) {
   const auto green = Vec3(0.05, 0.8, 0.05);
 
   const auto floor_prim = std::make_shared<Primitive>(
-      floor, std::make_shared<Material>(white1), nullptr);
+      floor, std::make_shared<Diffuse>(white1), nullptr);
   const auto right_wall_prim = std::make_shared<Primitive>(
-      right_wall, std::make_shared<Material>(green), nullptr);
+      right_wall, std::make_shared<Diffuse>(green), nullptr);
   const auto left_wall_prim = std::make_shared<Primitive>(
-      left_wall, std::make_shared<Material>(red), nullptr);
+      left_wall, std::make_shared<Diffuse>(red), nullptr);
   const auto ceil_prim = std::make_shared<Primitive>(
-      ceil, std::make_shared<Material>(white1), nullptr);
+      ceil, std::make_shared<Diffuse>(white1), nullptr);
   const auto forward_wall_prim = std::make_shared<Primitive>(
-      forward_wall, std::make_shared<Material>(white1), nullptr);
+      forward_wall, std::make_shared<Diffuse>(white1), nullptr);
   const auto shortblock1_prim = std::make_shared<Primitive>(
-      shortblock1, std::make_shared<Material>(white1), nullptr);
+      shortblock1, std::make_shared<Diffuse>(white1), nullptr);
   const auto shortblock2_prim = std::make_shared<Primitive>(
-      shortblock2, std::make_shared<Material>(white1), nullptr);
+      shortblock2, std::make_shared<Diffuse>(white1), nullptr);
   const auto shortblock3_prim = std::make_shared<Primitive>(
-      shortblock3, std::make_shared<Material>(white1), nullptr);
+      shortblock3, std::make_shared<Diffuse>(white1), nullptr);
   const auto shortblock4_prim = std::make_shared<Primitive>(
-      shortblock4, std::make_shared<Material>(white1), nullptr);
+      shortblock4, std::make_shared<Diffuse>(white1), nullptr);
   const auto shortblock5_prim = std::make_shared<Primitive>(
-      shortblock5, std::make_shared<Material>(white1), nullptr);
+      shortblock5, std::make_shared<Diffuse>(white1), nullptr);
   const auto tallblock1_prim = std::make_shared<Primitive>(
-      tallblock1, std::make_shared<Material>(white1), nullptr);
+      tallblock1, std::make_shared<Diffuse>(white1), nullptr);
   const auto tallblock2_prim = std::make_shared<Primitive>(
-      tallblock2, std::make_shared<Material>(white1), nullptr);
+      tallblock2, std::make_shared<Diffuse>(white1), nullptr);
   const auto tallblock3_prim = std::make_shared<Primitive>(
-      tallblock3, std::make_shared<Material>(white1), nullptr);
+      tallblock3, std::make_shared<Diffuse>(white1), nullptr);
   const auto tallblock4_prim = std::make_shared<Primitive>(
-      tallblock4, std::make_shared<Material>(white1), nullptr);
+      tallblock4, std::make_shared<Diffuse>(white1), nullptr);
   const auto tallblock5_prim = std::make_shared<Primitive>(
-      tallblock5, std::make_shared<Material>(white1), nullptr);
+      tallblock5, std::make_shared<Diffuse>(white1), nullptr);
   const auto light_prim = std::make_shared<Primitive>(
-      light, std::make_shared<Material>(white1),
+      light, std::make_shared<Diffuse>(white1),
       std::make_shared<Light>(0.1 * Vec3(340, 190, 100)));
 
   prims.push_back(floor_prim);
