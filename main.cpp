@@ -365,12 +365,18 @@ class Light {
 //////////////////////////////////////////
 
 // IntersectInfo
+
+// prototype declaration of Primitive
+class Primitive;
+
 struct IntersectInfo {
   Real t;          // hit distance
   Vec3 hitPos;     // hit potision
   Vec3 hitNormal;  // surface normal at hit position
   Vec3 dpdu;       // derivative of hit position with u(tangent vector)
-  Vec3 dpdv;       // derivative of hit position with v(cotangent vector)
+  Vec3 dpdv;       // derivative of hit position with v(cotangent vector
+
+  std::shared_ptr<Primitive> hitPrimitive;  // hit primitive
 
   IntersectInfo() : t(std::numeric_limits<Real>::max()) {}
 };
@@ -532,6 +538,8 @@ int main() {
 
         IntersectInfo info;
         if (intersector.intersect(ray, info)) {
+          // Le
+          RGB += throughput;
         } else {
           RGB += throughput * Vec3(1);
         }
