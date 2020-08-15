@@ -570,6 +570,9 @@ int main() {
           // update throughput
           throughput *= BRDF / pdf_solid;
 
+          // update ray
+          ray.direction = next_direction;
+
         } else {
           RGB += throughput * Vec3(1);
         }
