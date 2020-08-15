@@ -547,17 +547,15 @@ class Sky {
 class Scene {
  public:
   const std::shared_ptr<Camera> camera;
-  const std::shared_ptr<Sampler> sampler;
   const std::vector<std::shared_ptr<Primitive>> prims;
   const std::shared_ptr<Sky> sky;
 
   Intersector intersector;
 
   Scene(const std::shared_ptr<Camera>& _camera,
-        const std::shared_ptr<Sampler>& _sampler,
         const std::vector<std ::shared_ptr<Primitive>>& _prims,
         const std ::shared_ptr<Sky>& _sky)
-      : camera(_camera), sampler(_sampler), prims(_prims), sky(_sky) {
+      : camera(_camera), prims(_prims), sky(_sky) {
     // setup intersector
     intersector = Intersector(prims);
   }
@@ -621,19 +619,51 @@ class Integrator {
 
 //////////////////////////////////////////
 
+class Renderer {
+ public:
+  const Scene scene;
+  const Integrator integrator;
+  Sampler sampler;
+
+  Renderer(const Scene& _scene, const Integrator& _integrator,
+           const Sampler& _sampler)
+      : scene(_scene), integrator(_integrator), sampler(_sampler) {}
+
+  void render(uint64_t n_samples) {
+    for (uint32_t i = 0; i < scene.camera->film->height; ++i) {
+      for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
+        for (uint64_t k = 0; k < n_samples; ++k) {
+          // sample ray
+          Ray ray = scene.camera->sampleRay(i, j, sampler);
+
+          // compute radiance
+          const Vec3 radiance = integrator.radiance(ray, scene, sampler);
+
+          // add radiance on pixel
+          scene.camera->film->addPixel(i, j, radiance);
+        }
+      }
+    }
+
+    // write ppm
+    scene.camera->film->writePPM("output.ppm");
+  }
+};
+
+//////////////////////////////////////////
+
 int main() {
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
-  const uint32_t samples = 100;
-  const uint32_t maxDepth = 100;
-  const Real russian_roulette_prob = 0.99;
+  const uint64_t samples = 100;
 
   // setup image
   const auto film = std::make_shared<Film>(width, height);
 
   // setup camera
-  Camera camera(Vec3(0, 0, 1), Vec3(0, 0, -1), film, PI / 2.0);
+  const auto camera =
+      std::make_shared<Camera>(Vec3(0, 0, 1), Vec3(0, 0, -1), film, PI / 2.0);
 
   // setup primitives
   std::vector<std::shared_ptr<Primitive>> prims;
@@ -644,62 +674,23 @@ int main() {
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
 
-  // setup intersector
-  Intersector intersector(prims);
-
   // setup sky
-  Sky sky(Vec3(1));
+  const auto sky = std::make_shared<Sky>(Vec3(1));
+
+  // setup scene
+  Scene scene(camera, prims, sky);
 
   // setup sampler
   Sampler sampler;
 
-  // for each pixels
-  for (int i = 0; i < height; ++i) {
-    for (int j = 0; j < width; ++j) {
-      // sample ray
-      Ray ray = camera.sampleRay(i, j, sampler);
+  // setup integrator
+  Integrator integrator;
 
-      Vec3 RGB;
-      Vec3 throughput(1);
-      uint32_t depth = 0;
-      for (int k = 0; k < samples; ++k) {
-        if (depth > maxDepth) break;
+  // setup renderer
+  Renderer renderer(scene, integrator, sampler);
 
-        // russian roulette
-        if (sampler.uniformReal() >= russian_roulette_prob) break;
-        throughput /= russian_roulette_prob;
-
-        IntersectInfo info;
-        if (intersector.intersect(ray, info)) {
-          const auto prim = info.hitPrimitive;
-
-          // Le
-          RGB += throughput * prim->light->Le();
-
-          // BRDF sampling
-          Vec3 next_direction;
-          Real pdf_solid;
-          const Vec3 BRDF =
-              prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
-
-          // update throughput
-          throughput *= BRDF / pdf_solid;
-
-          // update ray
-          ray.direction = next_direction;
-
-        } else {
-          RGB += throughput * sky.Le(ray);
-        }
-      }
-
-      // add RGB on film
-      camera.film->addPixel(i, j, RGB);
-    }
-  }
-
-  // write ppm
-  camera.film->writePPM("output.ppm");
+  // render
+  renderer.render(samples);
 
   return 0;
 }
