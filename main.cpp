@@ -365,6 +365,16 @@ class Sphere {
     info.t = t;
     info.hitPos = ray(t);
     info.hitNormal = normalize(info.hitPos - center);
+    info.dpdu = Vec3(-info.hitPos.z, 0, info.hitPos.x);
+
+    // compute local coordinate(phi, theta) of hit position
+    Real phi = std::atan2(info.hitPos.z, info.hitPos.x);
+    if (phi < 0) phi += PI2;
+    const Real theta =
+        std::acos(std::clamp(info.hitPos.y, Real(-1.0), Real(1.0)));
+
+    info.dpdv = Vec3(std::cos(phi) * info.hitPos.y, -radius * std ::sin(theta),
+                     std::sin(phi) * info.hitPos.y);
 
     return true;
   }
