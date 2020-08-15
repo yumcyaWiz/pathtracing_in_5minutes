@@ -294,7 +294,14 @@ class Film {
 
     for (int i = 0; i < height; ++i) {
       for (int j = 0; j < width; ++j) {
-        const Vec3& rgb = getPixel(i, j);
+        Vec3 rgb = getPixel(i, j);
+
+        // gamma correction
+        rgb.x = std::pow(rgb.x, 1 / 2.2);
+        rgb.y = std::pow(rgb.y, 1 / 2.2);
+        rgb.z = std::pow(rgb.z, 1 / 2.2);
+
+        // convert real to uint
         const uint32_t R =
             std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
         const uint32_t G =
@@ -677,11 +684,11 @@ int main() {
   std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000),
-      std::make_shared<Material>(Vec3(0.9)), std::make_shared<Light>(Vec3(0))));
-  prims.push_back(
-      std::make_shared<Primitive>(std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-                                  std::make_shared<Material>(Vec3(0.2, 0.2, 1)),
-                                  std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
+  prims.push_back(std::make_shared<Primitive>(
+      std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
+      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
+      std::make_shared<Light>(Vec3(0))));
 
   // setup sky
   const auto sky = std::make_shared<Sky>(Vec3(1));
