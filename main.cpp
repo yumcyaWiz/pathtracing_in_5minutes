@@ -38,6 +38,8 @@ class Vec3 {
   Vec3(Real _x) { x = y = z = _x; }
   Vec3(Real _x, Real _y, Real _z) : x(_x), y(_y), z(_z) {}
 
+  Vec3 operator-() const { return Vec3(-x, -y, -z); }
+
   Vec3& operator+=(const Vec3& v) {
     x += v.x;
     y += v.y;
@@ -477,6 +479,48 @@ class Sphere : public Shape {
 
     return true;
   }
+};
+
+// Plane
+class Plane : public Shape {
+ public:
+  Vec3 leftCornerPoint;
+  Vec3 right;
+  Vec3 up;
+  Vec3 normal;
+
+  Vec3 center;
+  Vec3 rightDir;
+  Real rightLength;
+  Vec3 upDir;
+  Real upLength;
+
+  Plane(const Vec3& _leftCornerPoint, const Vec3& _up, const Vec3& _right)
+      : leftCornerPoint(_leftCornerPoint), right(_right), up(_up) {
+    normal = normalize(cross(right, up));
+    center = leftCornerPoint + 0.5 * right + 0.5 * up;
+    rightDir = normalize(right);
+    rightLength = length(right);
+    upDir = normalize(up);
+    upLength = length(up);
+  };
+
+  bool intersect(const Ray& ray, IntersectInfo& res) const override {
+    Real t = -dot(ray.origin - center, normal) / dot(ray.direction, normal);
+    if (t < ray.tmin || t > ray.tmax) return false;
+
+    const Vec3 hitPos = ray(t);
+    Real dx = dot(hitPos - leftCornerPoint, rightDir);
+    Real dy = dot(hitPos - leftCornerPoint, upDir);
+    if (dx < 0 || dx > rightLength || dy < 0 || dy > upLength) return false;
+
+    res.t = t;
+    res.hitPos = hitPos;
+    res.hitNormal = dot(-ray.direction, normal) > 0 ? normal : -normal;
+    res.dpdu = rightDir;
+    res.dpdv = upDir;
+    return true;
+  };
 };
 
 //////////////////////////////////////////
