@@ -719,9 +719,13 @@ class Renderer {
 
 // Scenes
 
-std::vector<std::shared_ptr<Primitive>> testScene() {
-  std::vector<std::shared_ptr<Primitive>> prims;
+Scene testScene(const std::shared_ptr<Film>& film) {
+  // setup camera
+  const auto camera =
+      std::make_shared<Camera>(Vec3(0, 1, 3), Vec3(0, 0, -1), film, PI / 2.0);
 
+  // setup primitives
+  std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Plane>(Vec3(-2, 0, -2), Vec3(0, 0, 4), Vec3(4, 0, 0)),
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
@@ -730,7 +734,13 @@ std::vector<std::shared_ptr<Primitive>> testScene() {
       std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
       std::make_shared<Light>(Vec3(0))));
 
-  return prims;
+  // setup sky
+  const auto sky = std::make_shared<Sky>(Vec3(1));
+
+  // setup scene
+  Scene scene(camera, prims, sky);
+
+  return scene;
 }
 
 //////////////////////////////////////////
@@ -744,21 +754,14 @@ int main() {
   // setup image
   const auto film = std::make_shared<Film>(width, height);
 
-  // setup camera
-  const auto camera =
-      std::make_shared<Camera>(Vec3(0, 1, 3), Vec3(0, 0, -1), film, PI / 2.0);
-
-  // setup sky
-  const auto sky = std::make_shared<Sky>(Vec3(1));
-
-  // setup scene
-  Scene scene(camera, testScene(), sky);
-
   // setup sampler
   Sampler sampler;
 
   // setup integrator
   Integrator integrator;
+
+  // setup scene
+  Scene scene = testScene(film);
 
   // setup renderer
   Renderer renderer(scene, integrator, sampler);
