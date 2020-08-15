@@ -344,17 +344,19 @@ class Camera {
     const Real diagonal_length =
         std::sqrt(film->width_length * film->width_length +
                   film->height_length * film->height_length);
-    focal_length = diagonal_length / (2 * std::tan(fov));
+    focal_length = diagonal_length / (2.0 * std::tan(0.5 * fov));
+
+    std::cout << "[Camera] focal length: " << focal_length << std::endl;
   }
 
   // sample ray from camera
   Ray sampleRay(uint32_t i, uint32_t j, Sampler& sampler) {
     // sample position in pixel with super sampling
     const Real u = film->width_length *
-                   (2 * (j + sampler.uniformReal()) - film->width) /
+                   (2.0 * (j + sampler.uniformReal()) - film->width) /
                    film->height;
     const Real v = film->height_length *
-                   (2 * (i + sampler.uniformReal()) - film->height) /
+                   (2.0 * (i + sampler.uniformReal()) - film->height) /
                    film->height;
     const Vec3 p_film = origin + u * right + v * up;
 
@@ -600,7 +602,6 @@ class Integrator {
         Real pdf_solid;
         const Vec3 BRDF =
             prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
-        std::cout << BRDF << std::endl;
 
         // update throughput
         throughput *= BRDF / pdf_solid;
@@ -641,7 +642,7 @@ class Renderer {
           const Vec3 radiance = integrator.radiance(ray, scene, sampler);
 
           // add radiance on pixel
-          scene.camera->film->addPixel(i, j, radiance);
+          scene.camera->film->addPixel(i, j, (ray.direction + 1) / 2);
         }
       }
     }
