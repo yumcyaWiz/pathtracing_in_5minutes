@@ -433,7 +433,7 @@ class Sphere {
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     // solve quadratic equation
     const Real b = dot(ray.direction, ray.origin - center);
-    const Real c = length2(ray.origin - center);
+    const Real c = length2(ray.origin - center) - radius * radius;
     const Real D = b * b - c;
     if (D < 0) return false;
 
@@ -666,7 +666,7 @@ int main() {
 
   // setup camera
   const auto camera =
-      std::make_shared<Camera>(Vec3(0, 1, 1), Vec3(0, 0, -1), film, PI / 2.0);
+      std::make_shared<Camera>(Vec3(0, 1, 3), Vec3(0, 0, -1), film, PI / 2.0);
 
   // setup primitives
   std::vector<std::shared_ptr<Primitive>> prims;
