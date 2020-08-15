@@ -50,16 +50,34 @@ class Vec3 {
     z += k;
     return *this;
   }
+  Vec3& operator-=(const Vec3& v) {
+    x -= v.x;
+    y -= v.y;
+    z -= v.z;
+    return *this;
+  }
   Vec3& operator-=(Real k) {
     x -= k;
     y -= k;
     z -= k;
     return *this;
   }
+  Vec3& operator*=(const Vec3& v) {
+    x *= v.x;
+    y *= v.y;
+    z *= v.z;
+    return *this;
+  }
   Vec3& operator*=(Real k) {
     x *= k;
     y *= k;
     z *= k;
+    return *this;
+  }
+  Vec3& operator/=(const Vec3& v) {
+    x /= v.x;
+    y /= v.y;
+    z /= v.z;
     return *this;
   }
   Vec3& operator/=(Real k) {
@@ -538,8 +556,20 @@ int main() {
 
         IntersectInfo info;
         if (intersector.intersect(ray, info)) {
+          const auto prim = info.hitPrimitive;
+
           // Le
-          RGB += throughput;
+          RGB += throughput * prim->light->Le();
+
+          // BRDF sampling
+          Vec3 next_direction;
+          Real pdf_solid;
+          const Vec3 BRDF =
+              prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
+
+          // update throughput
+          throughput *= BRDF / pdf_solid;
+
         } else {
           RGB += throughput * Vec3(1);
         }
