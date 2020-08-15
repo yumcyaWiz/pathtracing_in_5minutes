@@ -247,7 +247,9 @@ class Film {
   const Real width_length;   // physical length in x-direction in [m]
   const Real height_length;  // physical length in y-direction in [m]
 
-  Vec3* pixels;  // an array contains RGB at each pixel, row-major.
+  // pixels are row-major array.
+  Vec3* pixels;       // an array contains RGB at each pixel
+  uint64_t* samples;  // number of samples at each pixel
 
   Film(uint32_t _width, uint32_t _height, Real _width_length = 0.036,
        Real _height_length = 0.024)
@@ -256,13 +258,28 @@ class Film {
         width_length(_width_length),
         height_length(_height_length) {
     pixels = new Vec3[width * height];
+    samples = new uint64_t[width * height];
+
+    // initialize samples
+    for (int i = 0; i < width * height; ++i) {
+      samples[i] = 0;
+    }
   }
-  ~Film() { delete[] pixels; }
+  ~Film() {
+    delete[] pixels;
+    delete[] samples;
+  }
 
   // getter and setter
   Vec3 getPixel(uint32_t i, uint32_t j) const { return pixels[j + width * i]; }
   void setPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
     pixels[j + width * i] = rgb;
+  }
+
+  // add RGB to pixel
+  void addPixel(uint32_t i, uint32_t j, const Vec3& rgb) {
+    pixels[j + width * i] += rgb;
+    samples[j + width * i] += 1;
   }
 
   // output ppm image
@@ -280,7 +297,7 @@ class Film {
 
     for (int i = 0; i < width; ++i) {
       for (int j = 0; j < height; ++j) {
-        const Vec3& rgb = getPixel(i, j);
+        const Vec3& rgb = pixels[j + width * i] / samples[j + width * i];
         const uint32_t R =
             std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
         const uint32_t G =
@@ -558,7 +575,7 @@ int main() {
   // setup sampler
   Sampler sampler;
 
-  // path tracing
+  // for each pixels
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       // sample ray
@@ -597,6 +614,9 @@ int main() {
           RGB += throughput * sky.Le(ray);
         }
       }
+
+      // add RGB on film
+      camera.film->addPixel(i, j, RGB);
     }
   }
 
