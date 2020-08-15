@@ -167,7 +167,7 @@ class Ray {
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
 
-  static constexpr Real tmin = 1e-3;
+  static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
   Ray() {}
@@ -677,14 +677,14 @@ int main() {
   std::vector<std::shared_ptr<Primitive>> prims;
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, -10000, 0), 10000),
-      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
-  prims.push_back(std::make_shared<Primitive>(
-      std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
-      std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Material>(Vec3(0.9)), std::make_shared<Light>(Vec3(0))));
+  prims.push_back(
+      std::make_shared<Primitive>(std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
+                                  std::make_shared<Material>(Vec3(0.2, 0.2, 1)),
+                                  std::make_shared<Light>(Vec3(0))));
 
   // setup sky
-  const auto sky = std::make_shared<Sky>(Vec3(0.8));
+  const auto sky = std::make_shared<Sky>(Vec3(1));
 
   // setup scene
   Scene scene(camera, prims, sky);
