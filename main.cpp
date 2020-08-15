@@ -271,6 +271,14 @@ class Film {
     pixels[j + width * i] += rgb;
   }
 
+  void divide(uint64_t k) {
+    for (int i = 0; i < height; ++i) {
+      for (int j = 0; j < width; ++j) {
+        pixels[j + width * i] /= k;
+      }
+    }
+  }
+
   // output ppm image
   void writePPM(const std::string& filename) const {
     std::ofstream file(filename);
@@ -641,6 +649,9 @@ class Renderer {
         }
       }
     }
+
+    // divide by n_samples
+    scene.camera->film->divide(n_samples);
 
     // write ppm
     scene.camera->film->writePPM("output.ppm");
