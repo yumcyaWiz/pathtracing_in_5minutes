@@ -167,7 +167,7 @@ class Ray {
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
 
-  static constexpr Real tmin = std::numeric_limits<Real>::epsilon();
+  static constexpr Real tmin = 1e-3;
   static constexpr Real tmax = std::numeric_limits<Real>::max();
 
   Ray() {}
@@ -295,8 +295,8 @@ class Film {
     file << width << " " << height << std::endl;
     file << "255" << std::endl;
 
-    for (int i = 0; i < width; ++i) {
-      for (int j = 0; j < height; ++j) {
+    for (int i = 0; i < height; ++i) {
+      for (int j = 0; j < width; ++j) {
         const Vec3& rgb = pixels[j + width * i] / samples[j + width * i];
         const uint32_t R =
             std::clamp(static_cast<uint32_t>(255 * rgb.x), 0u, 255u);
@@ -586,13 +586,13 @@ class Integrator {
 
     for (uint64_t depth = 0; depth < maxDepth; depth++) {
       // russian roulette
-      if (sampler.uniformReal() >= russian_roulette_prob) return radiance;
+      if (sampler.uniformReal() >= russian_roulette_prob) break;
       throughput /= russian_roulette_prob;
 
       // compute intersection with scene
       IntersectInfo info;
       if (scene.intersect(ray, info)) {
-        const auto prim = info.hitPrimitive;
+        const auto& prim = info.hitPrimitive;
 
         // Le
         radiance += throughput * prim->light->Le();
@@ -640,7 +640,7 @@ class Renderer {
       for (uint32_t j = 0; j < scene.camera->film->width; ++j) {
         for (uint64_t k = 0; k < n_samples; ++k) {
           // sample ray
-          Ray ray = scene.camera->sampleRay(i, j, sampler);
+          const Ray ray = scene.camera->sampleRay(i, j, sampler);
 
           // compute radiance
           const Vec3 radiance = integrator.radiance(ray, scene, sampler);
@@ -678,8 +678,7 @@ int main() {
       std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
   prims.push_back(std::make_shared<Primitive>(
       std::make_shared<Sphere>(Vec3(0, 1, 0), 1),
-      std::make_shared<Material>(Vec3(0.2, 0.2, 0.8)),
-      std::make_shared<Light>(Vec3(0))));
+      std::make_shared<Material>(Vec3(0.8)), std::make_shared<Light>(Vec3(0))));
 
   // setup sky
   const auto sky = std::make_shared<Sky>(Vec3(0.8));
