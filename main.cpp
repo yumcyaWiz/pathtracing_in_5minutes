@@ -514,6 +514,18 @@ class Intersector {
 
 //////////////////////////////////////////
 
+// Sky
+class Sky {
+ public:
+  const Vec3 le;
+
+  Sky(const Vec3& _le) : le(_le) {}
+
+  Vec3 Le(const Ray& ray) const { return le; }
+};
+
+//////////////////////////////////////////
+
 int main() {
   // parameters
   const uint32_t width = 512;
@@ -539,6 +551,9 @@ int main() {
 
   // setup intersector
   Intersector intersector(prims);
+
+  // setup sky
+  Sky sky(Vec3(1));
 
   // setup sampler
   Sampler sampler;
@@ -579,7 +594,7 @@ int main() {
           ray.direction = next_direction;
 
         } else {
-          RGB += throughput * Vec3(1);
+          RGB += throughput * sky.Le(ray);
         }
       }
     }
