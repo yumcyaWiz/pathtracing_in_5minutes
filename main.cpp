@@ -20,7 +20,10 @@ using Real = float;
 
 // global constants
 constexpr Real PI = 3.14159265358979323846;
-constexpr Real ONE_MINUS_EPS = 1 - std::numeric_limits<Real>::epsilon();
+constexpr Real PI2 = 2.0 * PI;
+constexpr Real INV_PI = 1.0 / PI;
+constexpr Real INV_PI2 = 1.0 / PI2;
+constexpr Real ONE_MINUS_EPS = 1.0 - std::numeric_limits<Real>::epsilon();
 
 //////////////////////////////////////////
 
@@ -175,7 +178,7 @@ class Sampler {
 };
 
 // sampling utils
-Vec3 sampleUniformHemisphere(Real u, Real v, Real& pdf) {
+Vec3 sampleCosineHemisphere(Real u, Real v, Real& pdf) {
   const Real theta = 0.5 * std::acos(1.0 - 2.0 * u);
   const Real phi = 2 * PI * v;
   const Real y = std::cos(theta);
@@ -298,13 +301,22 @@ class Camera {
 //////////////////////////////////////////
 
 // Material
+// computation on local coordinate(surface normal is y-axis)
 class Material {
  public:
   const Vec3 kd;
 
   Material(const Vec3& _kd) : kd(_kd) {}
 
-  Ray sampleRay(Sampler& sampler, Real pdf_solid) const { return Ray(); }
+  // BRDF sampling
+  Vec3 sampleBRDF(Sampler& sampler, Vec3& direction, Real& pdf_solid) const {
+    // sample direction
+    direction = sampleCosineHemisphere(sampler.uniformReal(),
+                                       sampler.uniformReal(), pdf_solid);
+
+    // compute BRDF
+    return INV_PI * kd;
+  }
 };
 
 //////////////////////////////////////////
