@@ -1,8 +1,8 @@
-# PathTracing in 5minutes
+# Path Tracing in 5minutes
 
 Single file path tracer written in C++.
 
-This is reference implementation of [Path Tracing in 5minutes]()
+This is reference implementation of [Path Tracing in 5minutes](https://speakerdeck.com/yumcyawiz/path-tracing-in-5-minutes)
 
 ## Requirements
 
@@ -21,5 +21,5 @@ make
 ## Run
 
 ```
-./main
+./build/main
 ```
