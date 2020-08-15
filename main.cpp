@@ -195,6 +195,7 @@ class Sampler {
     state.state = PCG32_DEFAULT_STATE;
     state.inc = PCG32_DEFAULT_INC;
   }
+  Sampler(uint64_t seed) { setSeed(seed); }
 
   // set seed of random number generator
   void setSeed(uint64_t seed) {
