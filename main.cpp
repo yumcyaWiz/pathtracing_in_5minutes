@@ -407,7 +407,7 @@ class Mirror : public Material {
  public:
   const Vec3 ks;
 
-  Mirror(const Vec3& ks) {}
+  Mirror(const Vec3& _ks) : ks(_ks) {}
 
   Vec3 sampleBRDF(const Vec3& wo, Sampler& sampler, Vec3& direction,
                   Real& pdf_solid) const override {
@@ -827,7 +827,7 @@ Scene cornellBoxScene(const std::shared_ptr<Film>& film) {
   const auto green = Vec3(0.05, 0.8, 0.05);
 
   const auto floor_prim = std::make_shared<Primitive>(
-      floor, std::make_shared<Diffuse>(white1), nullptr);
+      floor, std::make_shared<Mirror>(white1), nullptr);
   const auto right_wall_prim = std::make_shared<Primitive>(
       right_wall, std::make_shared<Diffuse>(green), nullptr);
   const auto left_wall_prim = std::make_shared<Primitive>(
