@@ -743,6 +743,112 @@ Scene testScene(const std::shared_ptr<Film>& film) {
   return scene;
 }
 
+Scene cornellBoxScene(const std::shared_ptr<Film>& film) {
+  // setup camera
+  const auto camera = std::make_shared<Camera>(Vec3(278, 273, -900),
+                                               Vec3(0, 0, 1), film, PI / 4.0);
+
+  // setup primitives
+  std::vector<std::shared_ptr<Primitive>> prims;
+
+  const auto floor = std::make_shared<Plane>(Vec3(0, 0, 0), Vec3(0, 0, 559.2),
+                                             Vec3(556, 0, 0));
+  const auto right_wall = std::make_shared<Plane>(
+      Vec3(0, 0, 0), Vec3(0, 548.8, 0), Vec3(0, 0, 559.2));
+  const auto left_wall = std::make_shared<Plane>(
+      Vec3(556, 0, 0), Vec3(0, 0, 559.2), Vec3(0, 548.8, 0));
+  const auto ceil = std::make_shared<Plane>(Vec3(0, 548.8, 0), Vec3(556, 0, 0),
+                                            Vec3(0, 0, 559.2));
+  const auto forward_wall = std::make_shared<Plane>(
+      Vec3(0, 0, 559.2), Vec3(0, 548.8, 0), Vec3(556, 0, 0));
+  const auto shortblock1 = std::make_shared<Plane>(
+      Vec3(130, 165, 65), Vec3(-48, 0, 160), Vec3(160, 0, 49));
+  const auto shortblock2 = std::make_shared<Plane>(
+      Vec3(290, 0, 114), Vec3(0, 165, 0), Vec3(-50, 0, 158));
+  const auto shortblock3 = std::make_shared<Plane>(
+      Vec3(130, 0, 65), Vec3(0, 165, 0), Vec3(160, 0, 49));
+  const auto shortblock4 = std::make_shared<Plane>(
+      Vec3(82, 0, 225), Vec3(0, 165, 0), Vec3(48, 0, -160));
+  const auto shortblock5 = std::make_shared<Plane>(
+      Vec3(240, 0, 272), Vec3(0, 165, 0), Vec3(-158, 0, -47));
+  const auto tallblock1 = std::make_shared<Plane>(
+      Vec3(423, 330, 247), Vec3(-158, 0, 49), Vec3(49, 0, 159));
+  const auto tallblock2 = std::make_shared<Plane>(
+      Vec3(423, 0, 247), Vec3(0, 330, 0), Vec3(49, 0, 159));
+  const auto tallblock3 = std::make_shared<Plane>(
+      Vec3(472, 0, 406), Vec3(0, 330, 0), Vec3(-158, 0, 50));
+  const auto tallblock4 = std::make_shared<Plane>(
+      Vec3(314, 0, 456), Vec3(0, 330, 0), Vec3(-49, 0, -160));
+  const auto tallblock5 = std::make_shared<Plane>(
+      Vec3(265, 0, 296), Vec3(0, 330, 0), Vec3(158, 0, -49));
+  const auto light = std::make_shared<Plane>(Vec3(343, 548.6, 227),
+                                             Vec3(-130, 0, 0), Vec3(0, 0, 105));
+
+  const auto white1 = Vec3(0.8);
+  const auto white2 = Vec3(0.99);
+  const auto red = Vec3(0.8, 0.05, 0.05);
+  const auto green = Vec3(0.05, 0.8, 0.05);
+
+  const auto floor_prim = std::make_shared<Primitive>(
+      floor, std::make_shared<Material>(white1), nullptr);
+  const auto right_wall_prim = std::make_shared<Primitive>(
+      right_wall, std::make_shared<Material>(green), nullptr);
+  const auto left_wall_prim = std::make_shared<Primitive>(
+      left_wall, std::make_shared<Material>(red), nullptr);
+  const auto ceil_prim = std::make_shared<Primitive>(
+      ceil, std::make_shared<Material>(white1), nullptr);
+  const auto forward_wall_prim = std::make_shared<Primitive>(
+      forward_wall, std::make_shared<Material>(white1), nullptr);
+  const auto shortblock1_prim = std::make_shared<Primitive>(
+      shortblock1, std::make_shared<Material>(white1), nullptr);
+  const auto shortblock2_prim = std::make_shared<Primitive>(
+      shortblock2, std::make_shared<Material>(white1), nullptr);
+  const auto shortblock3_prim = std::make_shared<Primitive>(
+      shortblock3, std::make_shared<Material>(white1), nullptr);
+  const auto shortblock4_prim = std::make_shared<Primitive>(
+      shortblock4, std::make_shared<Material>(white1), nullptr);
+  const auto shortblock5_prim = std::make_shared<Primitive>(
+      shortblock5, std::make_shared<Material>(white1), nullptr);
+  const auto tallblock1_prim = std::make_shared<Primitive>(
+      tallblock1, std::make_shared<Material>(white1), nullptr);
+  const auto tallblock2_prim = std::make_shared<Primitive>(
+      tallblock2, std::make_shared<Material>(white1), nullptr);
+  const auto tallblock3_prim = std::make_shared<Primitive>(
+      tallblock3, std::make_shared<Material>(white1), nullptr);
+  const auto tallblock4_prim = std::make_shared<Primitive>(
+      tallblock4, std::make_shared<Material>(white1), nullptr);
+  const auto tallblock5_prim = std::make_shared<Primitive>(
+      tallblock5, std::make_shared<Material>(white1), nullptr);
+  const auto light_prim = std::make_shared<Primitive>(
+      light, std::make_shared<Material>(white1),
+      std::make_shared<Light>(0.1 * Vec3(340, 190, 100)));
+
+  prims.push_back(floor_prim);
+  prims.push_back(right_wall_prim);
+  prims.push_back(left_wall_prim);
+  prims.push_back(ceil_prim);
+  prims.push_back(forward_wall_prim);
+  prims.push_back(shortblock1_prim);
+  prims.push_back(shortblock2_prim);
+  prims.push_back(shortblock3_prim);
+  prims.push_back(shortblock4_prim);
+  prims.push_back(shortblock5_prim);
+  prims.push_back(tallblock1_prim);
+  prims.push_back(tallblock2_prim);
+  prims.push_back(tallblock3_prim);
+  prims.push_back(tallblock4_prim);
+  prims.push_back(tallblock5_prim);
+  prims.push_back(light_prim);
+
+  // setup sky
+  const auto sky = std::make_shared<Sky>(Vec3(1));
+
+  // setup scene
+  Scene scene(camera, prims, sky);
+
+  return scene;
+}
+
 //////////////////////////////////////////
 
 int main() {
