@@ -251,8 +251,8 @@ class Film {
   Vec3* pixels;       // an array contains RGB at each pixel
   uint64_t* samples;  // number of samples at each pixel
 
-  Film(uint32_t _width, uint32_t _height, Real _width_length = 0.036,
-       Real _height_length = 0.024)
+  Film(uint32_t _width, uint32_t _height, Real _width_length = 0.025,
+       Real _height_length = 0.025)
       : width(_width),
         height(_height),
         width_length(_width_length),
@@ -603,8 +603,11 @@ class Integrator {
         const Vec3 BRDF =
             prim->sampleBRDF(info, sampler, next_direction, pdf_solid);
 
+        // cosine term
+        const Real cos = std::abs(dot(next_direction, info.hitNormal));
+
         // update throughput
-        throughput *= BRDF / pdf_solid;
+        throughput *= BRDF * cos / pdf_solid;
 
         // update ray
         ray.direction = next_direction;
@@ -659,7 +662,7 @@ int main() {
   // parameters
   const uint32_t width = 512;
   const uint32_t height = 512;
-  const uint64_t samples = 1;
+  const uint64_t samples = 10;
 
   // setup image
   const auto film = std::make_shared<Film>(width, height);
