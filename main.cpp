@@ -132,31 +132,46 @@ Vec3 operator/(Real k, const Vec3& v) {
   return Vec3(k / v.x, k / v.y, k / v.z);
 }
 
+// dot product
 Real dot(const Vec3& v1, const Vec3& v2) {
   return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
+// cross product
 Vec3 cross(const Vec3& v1, const Vec3& v2) {
   return Vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
               v1.x * v2.y - v1.y * v2.x);
 }
 
+// length of vector
 Real length(const Vec3& v) {
   return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
+// squared length of vector
 Real length2(const Vec3& v) { return v.x * v.x + v.y * v.y + v.z * v.z; }
 
+// normalize vector
 Vec3 normalize(const Vec3& v) { return v / length(v); }
 
+// convert world vector to local vector
+// lx: x-axis basis vector of local coordinate
+// ly: y-axis basis vector of local coordinate
+// lz: z-axis basis vector of local coordinate
 Vec3 worldToLocal(const Vec3& v, const Vec3& lx, const Vec3& ly,
                   const Vec3& lz) {
   return Vec3(dot(v, lx), dot(v, ly), dot(v, lz));
 }
+
+// convert local vector to world vector
+// lx: x-axis basis vector of local coordinate
+// ly: y-axis basis vector of local coordinate
+// lz: z-axis basis vector of local coordinate
 Vec3 localToWorld(const Vec3& v, const Vec3& lx, const Vec3& ly,
                   const Vec3& lz) {
   return Vec3(dot(v, Vec3(lx.x, ly.x, lz.x)), dot(v, Vec3(lx.y, ly.y, lz.y)),
               dot(v, Vec3(lx.z, ly.z, lz.z)));
 }
 
+// print vector
 std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
   stream << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   return stream;
@@ -231,6 +246,8 @@ class Sampler {
 };
 
 // sampling utils
+
+// sample direction by cosine weighted hemisphere sampling
 Vec3 sampleCosineHemisphere(Real u, Real v, Real& pdf) {
   const Real theta = 0.5 * std::acos(1.0 - 2.0 * u);
   const Real phi = PI2 * v;
@@ -375,11 +392,8 @@ class Camera {
 
 //////////////////////////////////////////
 
-// Material utils
-Vec3 reflect(const Vec3& v, const Vec3& n) { return -v + 2 * dot(v, n) * n; }
-
 // Material
-// computation on local coordinate(surface normal is y-axis)
+// computations are done in local coordinate(surface normal is y-axis)
 class Material {
  public:
   // BRDF sampling
@@ -387,6 +401,14 @@ class Material {
                           Real& pdf_solid) const = 0;
 };
 
+// Material utils
+
+Real absCosTheta(const Vec3& w) { return std::abs(w.y); }
+
+// reflect v with normal n
+Vec3 reflect(const Vec3& v, const Vec3& n) { return -v + 2 * dot(v, n) * n; }
+
+// Diffuse Material
 class Diffuse : public Material {
  public:
   const Vec3 kd;
@@ -404,6 +426,7 @@ class Diffuse : public Material {
   }
 };
 
+// Mirror Material
 class Mirror : public Material {
  public:
   const Vec3 ks;
@@ -414,9 +437,7 @@ class Mirror : public Material {
                   Real& pdf_solid) const override {
     direction = reflect(wo, Vec3(0, 1, 0));
     pdf_solid = 1;
-
-    const Real cos = std::abs(direction.y);
-    return ks / cos;
+    return ks / absCosTheta(direction);
   }
 };
 
@@ -434,11 +455,10 @@ class Light {
 
 //////////////////////////////////////////
 
-// IntersectInfo
-
 // prototype declaration of Primitive
 class Primitive;
 
+// IntersectInfo
 struct IntersectInfo {
   Real t;          // hit distance
   Vec3 hitPos;     // hit potision
@@ -456,6 +476,7 @@ struct IntersectInfo {
 // Shape
 class Shape {
  public:
+  // compute intersection with ray
   virtual bool intersect(const Ray& ray, IntersectInfo& info) const = 0;
 };
 
@@ -468,7 +489,6 @@ class Sphere : public Shape {
   Sphere(const Vec3& _center, Real _radius)
       : center(_center), radius(_radius) {}
 
-  // intersect ray with sphere
   bool intersect(const Ray& ray, IntersectInfo& info) const override {
     // solve quadratic equation
     const Real b = dot(ray.direction, ray.origin - center);
@@ -602,7 +622,7 @@ class Intersector {
   Intersector(const std::vector<std::shared_ptr<Primitive>>& _prims)
       : prims(_prims) {}
 
-  // find closest intersection linearly
+  // find closest intersection by linear search
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     bool hit = false;
     Real t = ray.tmax;
@@ -656,6 +676,7 @@ class Scene {
     intersector = Intersector(prims);
   }
 
+  // compute intersection of given ray with scene
   bool intersect(const Ray& ray, IntersectInfo& info) const {
     return intersector.intersect(ray, info);
   }
@@ -664,10 +685,12 @@ class Scene {
 //////////////////////////////////////////
 
 // Integrator
+// integrator computes given ray's radiance.
+// path tracing is implemented.
 class Integrator {
  public:
-  const uint64_t maxDepth = 100;
-  const Real russian_roulette_prob = 0.99;
+  const uint64_t maxDepth = 100;            // maximum number of reflection
+  const Real russian_roulette_prob = 0.99;  // probability of russian roulette
 
   Integrator() {}
 
@@ -720,9 +743,12 @@ class Integrator {
 //////////////////////////////////////////
 
 // print utility
+
+// percentage string
 std::string percentage(Real x, Real max) {
   return std::to_string(x / max * 100.0) + "%";
 }
+// progressbar string
 std::string progressbar(Real x, Real max) {
   const int max_count = 40;
   int cur_count = (int)(x / max * max_count);
@@ -734,6 +760,7 @@ std::string progressbar(Real x, Real max) {
   return str;
 }
 
+// Renderer
 class Renderer {
  public:
   const Scene scene;
@@ -744,6 +771,7 @@ class Renderer {
            const Sampler& _sampler)
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
+  // n_samples: number of samples
   void render(uint64_t n_samples) {
     const auto start_time = std::chrono::system_clock::now();
     for (uint64_t k = 0; k < n_samples; ++k) {
