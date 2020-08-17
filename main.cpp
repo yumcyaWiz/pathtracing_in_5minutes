@@ -344,8 +344,8 @@ class Film {
 // pinhole camera model
 class Camera {
  public:
-  Vec3 origin;   // origin of camera(position of film center in 3-dimensional
-                 // space)
+  Vec3 origin;   // origin of camera(position of film center in
+                 // 3-dimensional space)
   Vec3 forward;  // forward direction of camera
   Vec3 right;    // right direction of camera
   Vec3 up;       // up direction of camera
@@ -375,7 +375,7 @@ class Camera {
   }
 
   // sample ray from camera
-  Ray sampleRay(uint32_t i, uint32_t j, Sampler& sampler) {
+  Ray sampleRay(uint32_t i, uint32_t j, Sampler& sampler) const {
     // sample position in pixel with super sampling
     const Real u = film->width_length *
                    (2.0 * (j + sampler.uniformReal()) - film->width) /
