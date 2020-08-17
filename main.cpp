@@ -291,6 +291,7 @@ class Film {
     pixels[j + width * i] += rgb;
   }
 
+  // divide all pixels by given number of samples
   void divide(uint64_t k) {
     for (int i = 0; i < height; ++i) {
       for (int j = 0; j < width; ++j) {
