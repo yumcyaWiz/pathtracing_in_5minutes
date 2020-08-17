@@ -366,6 +366,7 @@ class Camera {
     std::cout << "[Camera] right: " << right << std::endl;
     std::cout << "[Camera] up: " << up << std::endl;
 
+    // compute focal length from fov
     const Real diagonal_length =
         std::sqrt(film->width_length * film->width_length +
                   film->height_length * film->height_length);
@@ -397,7 +398,10 @@ class Camera {
 // computations are done in local coordinate(surface normal is y-axis)
 class Material {
  public:
-  // BRDF sampling
+  // sample direction propotional to BRDF
+  // wo: reversed ray direction
+  // direction: sampled direction
+  // pdf_solid: pdf of direction
   virtual Vec3 sampleBRDF(const Vec3& wo, Sampler& sampler, Vec3& direction,
                           Real& pdf_solid) const = 0;
 };
