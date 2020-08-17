@@ -262,8 +262,8 @@ Vec3 sampleCosineHemisphere(Real u, Real v, Real& pdf) {
 // Film
 class Film {
  public:
-  uint32_t width;            // width of image in [px]
-  uint32_t height;           // height of image in [px]
+  const uint32_t width;      // width of image in [px]
+  const uint32_t height;     // height of image in [px]
   const Real width_length;   // physical length in x-direction in [m]
   const Real height_length;  // physical length in y-direction in [m]
 
