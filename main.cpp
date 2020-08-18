@@ -451,7 +451,6 @@ class Mirror : public Material {
 
 //////////////////////////////////////////
 
-// Light
 class Light {
  public:
   const Vec3 le;
@@ -988,7 +987,7 @@ int main() {
   const auto integrator = std::make_shared<PathTracing>();
 
   // setup scene
-  Scene scene = cornellBoxScene(film);
+  const Scene scene = cornellBoxScene(film);
 
   // setup renderer
   Renderer renderer(scene, integrator, sampler);
