@@ -621,14 +621,22 @@ class Primitive {
 class Intersector {
   // it computes ray's intersection with primitives
  public:
-  std::vector<std::shared_ptr<Primitive>> prims;  // primitives
+  const std::vector<std::shared_ptr<Primitive>> prims;  // primitives
 
-  Intersector() {}
   Intersector(const std::vector<std::shared_ptr<Primitive>>& _prims)
       : prims(_prims) {}
 
+  // find closest intersection
+  virtual bool intersect(const Ray& ray, IntersectInfo& info) const = 0;
+};
+
+class LinearIntersector : public Intersector {
+ public:
+  LinearIntersector(const std::vector<std::shared_ptr<Primitive>>& _prims)
+      : Intersector(_prims) {}
+
   // find closest intersection by linear search
-  bool intersect(const Ray& ray, IntersectInfo& info) const {
+  bool intersect(const Ray& ray, IntersectInfo& info) const override {
     bool hit = false;
     Real t = ray.tmax;
     for (const auto& prim : prims) {
@@ -670,19 +678,19 @@ class Scene {
   const std::vector<std::shared_ptr<Primitive>> prims;
   const std::shared_ptr<Sky> sky;
 
-  Intersector intersector;
+  std::shared_ptr<Intersector> intersector;
 
   Scene(const std::shared_ptr<Camera>& _camera,
         const std::vector<std ::shared_ptr<Primitive>>& _prims,
         const std ::shared_ptr<Sky>& _sky)
       : camera(_camera), prims(_prims), sky(_sky) {
     // setup intersector
-    intersector = Intersector(prims);
+    intersector = std::make_shared<LinearIntersector>(prims);
   }
 
   // compute intersection of given ray with scene
   bool intersect(const Ray& ray, IntersectInfo& info) const {
-    return intersector.intersect(ray, info);
+    return intersector->intersect(ray, info);
   }
 };
 
