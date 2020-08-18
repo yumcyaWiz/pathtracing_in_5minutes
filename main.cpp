@@ -698,15 +698,22 @@ class Scene {
 
 class Integrator {
   // integrator computes given ray's radiance.
+ public:
+  // compute given ray's radiance
+  virtual Vec3 radiance(const Ray& ray_in, const Scene& scene,
+                        Sampler& sampler) const = 0;
+};
+
+class PathTracing : public Integrator {
   // path tracing is implemented.
  public:
   const uint64_t maxDepth = 100;            // maximum number of reflection
   const Real russian_roulette_prob = 0.99;  // probability of russian roulette
 
-  Integrator() {}
+  PathTracing() {}
 
-  // compute given ray's radiance
-  Vec3 radiance(const Ray& ray_in, const Scene& scene, Sampler& sampler) const {
+  Vec3 radiance(const Ray& ray_in, const Scene& scene,
+                Sampler& sampler) const override {
     Ray ray = ray_in;
     Vec3 radiance;
     Vec3 throughput(1);
@@ -774,12 +781,13 @@ std::string progressbar(Real x, Real max) {
 //////////////////////////////////////////
 
 class Renderer {
+  // computes radiance on each pixel and output PPM image
  public:
   const Scene scene;
-  const Integrator integrator;
+  const std::shared_ptr<Integrator> integrator;
   Sampler sampler;
 
-  Renderer(const Scene& _scene, const Integrator& _integrator,
+  Renderer(const Scene& _scene, const std ::shared_ptr<Integrator>& _integrator,
            const Sampler& _sampler)
       : scene(_scene), integrator(_integrator), sampler(_sampler) {}
 
@@ -794,7 +802,7 @@ class Renderer {
           const Ray ray = scene.camera->sampleRay(i, j, sampler);
 
           // compute radiance
-          const Vec3 radiance = integrator.radiance(ray, scene, sampler);
+          const Vec3 radiance = integrator->radiance(ray, scene, sampler);
 
           // add radiance on pixel
           scene.camera->film->addPixel(i, j, radiance);
@@ -977,7 +985,7 @@ int main() {
   Sampler sampler;
 
   // setup integrator
-  Integrator integrator;
+  const auto integrator = std::make_shared<PathTracing>();
 
   // setup scene
   Scene scene = cornellBoxScene(film);
