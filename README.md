@@ -1,10 +1,16 @@
 # Path Tracing in 5minutes
 
-Single file path tracer written in C++.
+Simple but easily extensible single file path tracer written in C++.
 
-This is reference implementation of [Path Tracing in 5minutes](https://speakerdeck.com/yumcyawiz/path-tracing-in-5-minutes)
+This is reference implementation of [Path Tracing in 5minutes](https://speakerdeck.com/yumcyawiz/path-tracing-in-5-minutes). Choose `summer_lt_2020` tag to make codes consistent with that slide.
 
 ![](img/cornellbox.png)
+
+## Features
+
+* Sphere and Plane Shape
+* Lambertian and Mirror BRDF
+* Path Tracing
 
 ## Requirements
 
