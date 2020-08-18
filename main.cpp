@@ -28,8 +28,8 @@ constexpr Real ONE_MINUS_EPS = 1.0 - std::numeric_limits<Real>::epsilon();
 
 //////////////////////////////////////////
 
-// 3-dimensional vector
 class Vec3 {
+  // 3-dimensional vector
  public:
   Real x;
   Real y;
@@ -179,8 +179,8 @@ std::ostream& operator<<(std::ostream& stream, const Vec3& v) {
 
 //////////////////////////////////////////
 
-// Ray
 class Ray {
+  // it represents ray
  public:
   Vec3 origin;     // origin of ray
   Vec3 direction;  // direction of ray
@@ -216,6 +216,8 @@ uint32_t pcg32_random_r(pcg32_random_t* rng) {
   uint32_t rot = oldstate >> 59u;
   return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
+
+//////////////////////////////////////////
 
 // random number generator
 class Sampler {
@@ -259,8 +261,9 @@ Vec3 sampleCosineHemisphere(Real u, Real v, Real& pdf) {
 
 //////////////////////////////////////////
 
-// Film
 class Film {
+  // it represents image sensor of camera
+  // store RGB values on each pixel
  public:
   const uint32_t width;      // width of image in [px]
   const uint32_t height;     // height of image in [px]
@@ -340,9 +343,8 @@ class Film {
 
 //////////////////////////////////////////
 
-// Camera
-// pinhole camera model
 class Camera {
+  // pinhole camera model
  public:
   Vec3 origin;   // origin of camera(position of film center in
                  // 3-dimensional space)
@@ -376,6 +378,7 @@ class Camera {
   }
 
   // sample ray from camera
+  // (i, j): pixel coordinate
   Ray sampleRay(uint32_t i, uint32_t j, Sampler& sampler) const {
     // sample position in pixel with super sampling
     const Real u = film->width_length *
@@ -394,9 +397,9 @@ class Camera {
 
 //////////////////////////////////////////
 
-// Material
-// computations are done in local coordinate(surface normal is y-axis)
 class Material {
+  // it represents BRDF
+  // computations are done in local coordinate(surface normal is y-axis)
  public:
   // sample direction propotional to BRDF
   // wo: reversed ray direction
@@ -413,10 +416,10 @@ Real absCosTheta(const Vec3& w) { return std::abs(w.y); }
 // reflect v with normal n
 Vec3 reflect(const Vec3& v, const Vec3& n) { return -v + 2 * dot(v, n) * n; }
 
-// Diffuse Material
 class Diffuse : public Material {
+  // Lambertian BRDF
  public:
-  const Vec3 kd;
+  const Vec3 kd;  // reflectance
 
   Diffuse(const Vec3& _kd) : kd(_kd) {}
 
@@ -431,8 +434,8 @@ class Diffuse : public Material {
   }
 };
 
-// Mirror Material
 class Mirror : public Material {
+  // Mirror BRDF
  public:
   const Vec3 ks;
 
@@ -478,14 +481,13 @@ struct IntersectInfo {
 
 //////////////////////////////////////////
 
-// Shape
 class Shape {
+  // it represents shape of primitive
  public:
   // compute intersection with ray
   virtual bool intersect(const Ray& ray, IntersectInfo& info) const = 0;
 };
 
-// Sphere
 class Sphere : public Shape {
  public:
   const Vec3 center;  // center of sphere
@@ -533,7 +535,6 @@ class Sphere : public Shape {
   }
 };
 
-// Plane
 class Plane : public Shape {
  public:
   Vec3 leftCornerPoint;
@@ -578,12 +579,11 @@ class Plane : public Shape {
 
 //////////////////////////////////////////
 
-// Primitive
 class Primitive {
  public:
-  std::shared_ptr<Shape> shape;
-  std::shared_ptr<Material> material;
-  std::shared_ptr<Light> light;
+  std::shared_ptr<Shape> shape;        // shape of primitive
+  std::shared_ptr<Material> material;  // material of primitive
+  std::shared_ptr<Light> light;        // area light of primitive
 
   Primitive(const std::shared_ptr<Shape>& _shape,
             const std::shared_ptr<Material>& _material,
@@ -618,8 +618,8 @@ class Primitive {
 
 //////////////////////////////////////////
 
-// Intersector
 class Intersector {
+  // it computes ray's intersection with primitives
  public:
   std::vector<std::shared_ptr<Primitive>> prims;  // primitives
 
@@ -652,19 +652,18 @@ class Intersector {
 
 //////////////////////////////////////////
 
-// Sky
 class Sky {
  public:
   const Vec3 le;
 
   Sky(const Vec3& _le) : le(_le) {}
 
+  // compute radiance from sky
   Vec3 Le(const Ray& ray) const { return le; }
 };
 
 //////////////////////////////////////////
 
-// Scene
 class Scene {
  public:
   const std::shared_ptr<Camera> camera;
@@ -689,10 +688,9 @@ class Scene {
 
 //////////////////////////////////////////
 
-// Integrator
-// integrator computes given ray's radiance.
-// path tracing is implemented.
 class Integrator {
+  // integrator computes given ray's radiance.
+  // path tracing is implemented.
  public:
   const uint64_t maxDepth = 100;            // maximum number of reflection
   const Real russian_roulette_prob = 0.99;  // probability of russian roulette
@@ -765,7 +763,8 @@ std::string progressbar(Real x, Real max) {
   return str;
 }
 
-// Renderer
+//////////////////////////////////////////
+
 class Renderer {
  public:
   const Scene scene;
